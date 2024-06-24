@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ModeToggle } from "@/components/ui/modetoggle";
 import { Toaster } from "@/components/ui/toaster";
+import SideMenu from "./components/sidemenu";
+import MenuHeader from "./components/menuheader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,12 +28,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="grid grid-cols-1 min-h-screen p-6 gap-4">
-            <ModeToggle />
-            {children}
-            <Toaster />
-          </main>
+          <div className="flex row-auto w-full h-full">
+            <SideMenu />
+            <div className="w-full">
+              <MenuHeader />
+              <main className="grid grid-cols-1 min-h-screen p-6 gap-4">
+                {children}
+              </main>
+            </div>
+          </div>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );
