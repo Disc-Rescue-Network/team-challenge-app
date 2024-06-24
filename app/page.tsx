@@ -63,7 +63,7 @@ const SearchPage = () => {
               <Label>Please wait</Label>
             </>
           ) : (
-            "Preview Event"
+            "Search"
           )}
         </Button>
       </div>
