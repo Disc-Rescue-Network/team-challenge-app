@@ -61,12 +61,12 @@ const MatchupPage = () => {
     alert("Teams saved successfully!");
   };
 
-  const sortedTeamPlayers: Player[] = team.sort(
-    (a: { rating: number }, b: { rating: number }) => b.rating - a.rating
-  );
-  const sortedOpponentPlayers: Player[] = opponent.sort(
-    (a: { rating: number }, b: { rating: number }) => b.rating - a.rating
-  );
+  //   const sortedTeamPlayers: Player[] = team.sort(
+  //     (a: { rating: number }, b: { rating: number }) => b.rating - a.rating
+  //   );
+  //   const sortedOpponentPlayers: Player[] = opponent.sort(
+  //     (a: { rating: number }, b: { rating: number }) => b.rating - a.rating
+  //   );
 
   return (
     <div>
@@ -136,7 +136,7 @@ const MatchupPage = () => {
       <h2>Matchup View</h2>
       <div>
         <h3>{teamName}</h3>
-        <ul>
+        {/* <ul>
           {sortedTeamPlayers.map((player) => (
             <li key={player.pdgaNumber}>
               {player.name} - {player.rating}
@@ -150,7 +150,7 @@ const MatchupPage = () => {
               {player.name} - {player.rating}
             </li>
           ))}
-        </ul>
+        </ul> */}
       </div>
     </div>
   );
