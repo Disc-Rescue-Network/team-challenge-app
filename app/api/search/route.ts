@@ -12,13 +12,24 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = await fetch("http://localhost:3001/search_pdga", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ firstName, lastName }),
-    });
+    const response = await fetch(
+      "https://tags-api.discrescuenetwork.com/search_pdga",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ firstName, lastName }),
+      }
+    );
+
+    // const response = await fetch("http://localhost:3001/search_pdga", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({ firstName, lastName }),
+    // });
 
     if (!response.ok) {
       throw new Error("Failed to fetch data from external API");
