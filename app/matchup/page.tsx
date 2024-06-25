@@ -16,6 +16,7 @@ import {
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -25,9 +26,13 @@ import { toast } from "@/components/ui/use-toast";
 import { Player } from "../interfaces/Player";
 import { Team } from "../interfaces/Team";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRouter } from "next/navigation";
+import { useDraft } from "../context/DraftContext";
 
 const MatchupPage = () => {
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+  const router = useRouter();
+  const { setTeamDraft, setSelectedOpponentDraft } = useDraft();
 
   const [hasTeam, setHasTeam] = useState<boolean>(false);
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
@@ -320,67 +325,120 @@ const MatchupPage = () => {
     }
   };
 
-  const handleEditRating = (player: Player) => {
-    if (!selectedOpponent) return;
+  const handleEditRating = (player: Player, isMyTeam: boolean) => {
+    if (isMyTeam) {
+      const newTeam = { ...team };
+      newTeam.players = newTeam.players.map((p) =>
+        p.pdgaNumber === player.pdgaNumber
+          ? { ...p, isEditing: true, tempRating: p.rating }
+          : p
+      );
+      setTeam(newTeam);
+    } else {
+      if (!selectedOpponent) return;
 
-    const newOpponent = { ...selectedOpponent };
-    newOpponent.players = (newOpponent.players || []).map((p) =>
-      p.pdgaNumber === player.pdgaNumber ? { ...p, isEditing: true } : p
-    );
-    setSelectedOpponent(newOpponent);
+      const newOpponent = { ...selectedOpponent };
+      newOpponent.players = newOpponent.players.map((p) =>
+        p.pdgaNumber === player.pdgaNumber
+          ? { ...p, isEditing: true, tempRating: p.rating }
+          : p
+      );
+      setSelectedOpponent(newOpponent);
+    }
   };
 
-  const handleRatingChange = (player: Player, newRating: string) => {
-    if (!selectedOpponent) return;
+  const handleRatingChange = (
+    player: Player,
+    newRating: string,
+    isMyTeam: boolean
+  ) => {
+    if (isMyTeam) {
+      const updatedTeam = { ...team };
+      updatedTeam.players = updatedTeam.players.map((p) =>
+        p.pdgaNumber === player.pdgaNumber
+          ? { ...p, tempRating: parseInt(newRating, 10) }
+          : p
+      );
+      setTeam(updatedTeam);
+    } else {
+      if (!selectedOpponent) return;
 
-    const newOpponent = { ...selectedOpponent };
-    newOpponent.players = (newOpponent.players || []).map((p) =>
-      p.pdgaNumber === player.pdgaNumber
-        ? { ...p, rating: parseInt(newRating, 10) }
-        : p
-    );
-    setSelectedOpponent(newOpponent);
+      const updatedOpponent = { ...selectedOpponent };
+      updatedOpponent.players = updatedOpponent.players.map((p) =>
+        p.pdgaNumber === player.pdgaNumber
+          ? { ...p, tempRating: parseInt(newRating, 10) }
+          : p
+      );
+      setSelectedOpponent(updatedOpponent);
+    }
   };
 
-  const handleSaveRating = async (player: Player) => {
-    if (!selectedOpponent) return;
-
+  const handleSaveRating = async (player: Player, isMyTeam: boolean) => {
     setIsLoading(true);
-    const updatedOpponent = { ...selectedOpponent };
-    updatedOpponent.players = (updatedOpponent.players || []).map((p) =>
-      p.pdgaNumber === player.pdgaNumber ? { ...p, isEditing: false } : p
-    );
 
     try {
-      const response = await fetch("/api/saveTeam", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ teamData: updatedOpponent, isMyTeam: false }),
-      });
+      if (isMyTeam) {
+        const updatedTeam = { ...team };
+        updatedTeam.players = updatedTeam.players.map((p) =>
+          p.pdgaNumber === player.pdgaNumber
+            ? { ...p, rating: p.tempRating, isEditing: false }
+            : p
+        );
+        setTeam(updatedTeam);
 
-      if (!response.ok) {
-        throw new Error("Failed to save opponent rating");
+        const response = await fetch("/api/saveTeam", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ teamData: updatedTeam, isMyTeam: true }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to save player rating");
+        }
+
+        toast({
+          title: "Success",
+          description: "Player rating saved successfully",
+          variant: "default",
+          duration: 3000,
+        });
+      } else {
+        if (!selectedOpponent) return;
+
+        const updatedOpponent = { ...selectedOpponent };
+        updatedOpponent.players = updatedOpponent.players.map((p) =>
+          p.pdgaNumber === player.pdgaNumber
+            ? { ...p, rating: p.tempRating, isEditing: false }
+            : p
+        );
+        setSelectedOpponent(updatedOpponent);
+
+        const response = await fetch("/api/saveTeam", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ teamData: updatedOpponent, isMyTeam: false }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to save opponent player rating");
+        }
+
+        toast({
+          title: "Success",
+          description: "Opponent player rating saved successfully",
+          variant: "default",
+          duration: 3000,
+        });
       }
-
-      toast({
-        title: "Success",
-        description: "Opponent rating saved successfully",
-        variant: "default",
-        duration: 3000,
-      });
-
-      // Re-sort the players by rating
-      const sortedPlayers = [...(updatedOpponent.players || [])].sort(
-        (a, b) => b.rating - a.rating
-      );
-      setSelectedOpponent({ ...updatedOpponent, players: sortedPlayers });
     } catch (error) {
-      console.error("Error saving opponent rating:", error);
+      console.error("Error saving player rating:", error);
       toast({
         title: "Error",
-        description: "Failed to save opponent rating",
+        description: "Failed to save player rating",
         variant: "destructive",
         duration: 3000,
       });
@@ -411,25 +469,57 @@ const MatchupPage = () => {
       return (
         <TableRow key={index}>
           <TableCell>{player.name || "N/A"}</TableCell>
-          <TableCell className="min-w-[60px]">
-            {player.rating || "N/A"}
-          </TableCell>
-          <TableCell> vs.</TableCell>
           <TableCell className="min-w-[100px]">
-            {opponentPlayer.isEditing ? (
+            {player.isEditing ? (
               <div className="flex flex-row gap-2">
                 <Input
                   type="number"
-                  value={opponentPlayer.rating || ""}
+                  value={player.tempRating ?? player.rating ?? ""}
                   onChange={(e) =>
-                    handleRatingChange(opponentPlayer, e.target.value)
+                    handleRatingChange(player, e.target.value, true)
                   }
                 />
                 <Button
                   variant="ghost"
                   size="icon"
                   className="max-w-[200px]"
-                  onClick={() => handleSaveRating(opponentPlayer)}
+                  onClick={() => handleSaveRating(player, true)}
+                >
+                  <Save size={16} />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <span>{player.rating || 0}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="max-w-[200px]"
+                  onClick={() => handleEditRating(player, true)}
+                >
+                  <Pencil size={16} />
+                </Button>
+              </>
+            )}
+          </TableCell>
+          <TableCell>vs.</TableCell>
+          <TableCell className="min-w-[100px]">
+            {opponentPlayer.isEditing ? (
+              <div className="flex flex-row gap-2">
+                <Input
+                  type="number"
+                  value={
+                    opponentPlayer.tempRating ?? opponentPlayer.rating ?? ""
+                  }
+                  onChange={(e) =>
+                    handleRatingChange(opponentPlayer, e.target.value, false)
+                  }
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="max-w-[200px]"
+                  onClick={() => handleSaveRating(opponentPlayer, false)}
                 >
                   <Save size={16} />
                 </Button>
@@ -441,30 +531,26 @@ const MatchupPage = () => {
                   variant="ghost"
                   size="icon"
                   className="max-w-[200px]"
-                  onClick={() => handleEditRating(opponentPlayer)}
+                  onClick={() => handleEditRating(opponentPlayer, false)}
                 >
                   <Pencil size={16} />
                 </Button>
               </>
             )}
           </TableCell>
-          <TableCell className="min-w-fit">
-            {opponentPlayer.name || "N/A"}
-          </TableCell>
+          <TableCell>{opponentPlayer.name || "N/A"}</TableCell>
           <TableCell className="flex flex-col gap-4 ">
-            {player.name && (
-              <Button onClick={() => handleTogglePlayer(player, "myTeam")}>
-                Bench {player.name}
-              </Button>
-            )}
-            {opponentPlayer.name && (
+            <Button onClick={() => handleTogglePlayer(player, "myTeam")}>
+              Bench {player.name}
+            </Button>
+            {opponentPlayer && (
               <Button
                 onClick={() =>
                   handleTogglePlayer(opponentPlayer, "opponentTeam")
                 }
                 variant="destructive"
               >
-                Bench {opponentPlayer.name}
+                Bench {opponentPlayer?.name}
               </Button>
             )}
           </TableCell>
@@ -483,6 +569,26 @@ const MatchupPage = () => {
       inactivePlayers.length,
       inactiveOpponentPlayers.length
     );
+
+    if (inactivePlayers.length === 0 && inactiveOpponentPlayers.length === 0) {
+      return (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Player</TableHead>
+              <TableHead>Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell colSpan={2} className="text-center pt-10">
+                <Label className="text-sm">No inactive players</Label>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      );
+    }
 
     if (isMobile) {
       return (
@@ -640,6 +746,12 @@ const MatchupPage = () => {
       );
       setSelectedOpponent(newOpponent);
     }
+  };
+
+  const goToDraftRoom = () => {
+    setTeamDraft(team); // Assuming `team` is your state variable
+    setSelectedOpponentDraft(selectedOpponent); // Assuming `selectedOpponent` is your state variable
+    router.push("/draft-room");
   };
 
   return (
@@ -937,8 +1049,15 @@ const MatchupPage = () => {
         </TabsContent>
         <TabsContent value="matchupViewer" className="w-full">
           <Card className="">
-            <CardHeader>
+            <CardHeader className="grid grid-cols-1 gap-4">
               <CardTitle>Matchup Viewer</CardTitle>
+              {selectedOpponent && (
+                <CardDescription>
+                  <Button variant="secondary" onClick={goToDraftRoom}>
+                    Enter Draft Room
+                  </Button>
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-8">
               {(!team || !selectedOpponent) && (
@@ -962,6 +1081,7 @@ const MatchupPage = () => {
                     </TableHeader>
                     <TableBody>{renderMatchups()}</TableBody>
                   </Table>
+
                   <Card className=" mt-4">
                     <CardHeader>
                       <CardTitle>Inactive Players</CardTitle>
