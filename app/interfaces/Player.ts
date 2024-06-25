@@ -7,4 +7,6 @@ export interface Player {
   state: string;
   country: string;
   membershipStatus: string;
+  active: boolean;
+  isEditing: boolean;
 }

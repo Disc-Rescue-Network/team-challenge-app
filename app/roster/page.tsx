@@ -209,7 +209,7 @@ const RosterPage = () => {
   };
 
   return (
-    <div className="flex flex-1 flex-col h-3/5 gap-4 p-4 lg:gap-6 lg:p-6">
+    <div className="flex flex-1 flex-col h-3/5 gap-6 p-2 lg:p-4 lg:gap-6">
       {hasTeam ? (
         <Card className="mr-4">
           <CardHeader>

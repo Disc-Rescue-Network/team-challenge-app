@@ -44,7 +44,7 @@ const SearchPage = () => {
   }, []);
 
   return (
-    <div className="flex flex-1 flex-col p-4 gap-8">
+    <div className="flex flex-1 flex-col p-2 lg:p-4 gap-8">
       <PlayerSearch />
     </div>
   );
