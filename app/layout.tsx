@@ -6,6 +6,7 @@ import { ModeToggle } from "@/components/ui/modetoggle";
 import { Toaster } from "@/components/ui/toaster";
 import SideMenu from "./components/sidemenu";
 import MenuHeader from "./components/menuheader";
+import { DraftProvider } from "./context/DraftContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,7 +35,7 @@ export default function RootLayout({
             <div className="w-full">
               <MenuHeader />
               <main className="grid grid-cols-1 min-h-screen p-2 lg:p-4 gap-4">
-                {children}
+                <DraftProvider>{children}</DraftProvider>
               </main>
             </div>
           </div>

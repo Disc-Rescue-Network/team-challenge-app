@@ -16,6 +16,7 @@ import {
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -25,9 +26,13 @@ import { toast } from "@/components/ui/use-toast";
 import { Player } from "../interfaces/Player";
 import { Team } from "../interfaces/Team";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRouter } from "next/navigation";
+import { useDraft } from "../context/DraftContext";
 
 const MatchupPage = () => {
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+  const router = useRouter();
+  const { setTeamDraft, setSelectedOpponentDraft } = useDraft();
 
   const [hasTeam, setHasTeam] = useState<boolean>(false);
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
@@ -565,6 +570,26 @@ const MatchupPage = () => {
       inactiveOpponentPlayers.length
     );
 
+    if (inactivePlayers.length === 0 && inactiveOpponentPlayers.length === 0) {
+      return (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Player</TableHead>
+              <TableHead>Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell colSpan={2} className="text-center pt-10">
+                <Label className="text-sm">No inactive players</Label>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      );
+    }
+
     if (isMobile) {
       return (
         <div className="flex flex-col">
@@ -721,6 +746,12 @@ const MatchupPage = () => {
       );
       setSelectedOpponent(newOpponent);
     }
+  };
+
+  const goToDraftRoom = () => {
+    setTeamDraft(team); // Assuming `team` is your state variable
+    setSelectedOpponentDraft(selectedOpponent); // Assuming `selectedOpponent` is your state variable
+    router.push("/draft-room");
   };
 
   return (
@@ -1018,8 +1049,15 @@ const MatchupPage = () => {
         </TabsContent>
         <TabsContent value="matchupViewer" className="w-full">
           <Card className="">
-            <CardHeader>
+            <CardHeader className="grid grid-cols-1 gap-4">
               <CardTitle>Matchup Viewer</CardTitle>
+              {selectedOpponent && (
+                <CardDescription>
+                  <Button variant="secondary" onClick={goToDraftRoom}>
+                    Enter Draft Room
+                  </Button>
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-8">
               {(!team || !selectedOpponent) && (
@@ -1043,6 +1081,7 @@ const MatchupPage = () => {
                     </TableHeader>
                     <TableBody>{renderMatchups()}</TableBody>
                   </Table>
+
                   <Card className=" mt-4">
                     <CardHeader>
                       <CardTitle>Inactive Players</CardTitle>
