@@ -626,7 +626,7 @@ const MatchupPage = () => {
               <TabsTrigger value="createTeam">Create Opponent</TabsTrigger>
             </TabsList>
             <TabsContent value="selectTeam" className="w-11/12">
-              {opponents.length > 0 ? (
+              {opponents.length > 0 && (
                 <Card className="mr-4">
                   <CardHeader>
                     <CardTitle>Select Opponent Team</CardTitle>
@@ -663,8 +663,6 @@ const MatchupPage = () => {
                     </Table>
                   </CardContent>
                 </Card>
-              ) : (
-                <> No teams to select </>
               )}
             </TabsContent>
             <TabsContent value="createTeam" className="w-11/12">
