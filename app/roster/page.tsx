@@ -33,6 +33,8 @@ const RosterPage = () => {
   const [results, setResults] = useState<Player[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [isAdding, setIsAdding] = useState<boolean>(false);
+  const [isRemoving, setIsRemoving] = useState<boolean>(false);
   const [isMyTeam, setIsMyTeam] = useState<boolean>(true);
 
   useEffect(() => {
@@ -73,7 +75,7 @@ const RosterPage = () => {
 
   const handleAddPlayer = async (player: Player) => {
     try {
-      setIsLoading(true);
+      setIsAdding(true);
       const response = await fetch("/api/addPlayerToMyTeam", {
         method: "POST",
         headers: {
@@ -81,6 +83,18 @@ const RosterPage = () => {
         },
         body: JSON.stringify({ player, teamName: team.name }),
       });
+
+      if (response.status === 400) {
+        const data = await response.json();
+        toast({
+          title: "Player already exists",
+          description: data.message,
+          variant: "destructive",
+          duration: 3000,
+        });
+        setIsAdding(false);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("Failed to add player");
@@ -103,7 +117,7 @@ const RosterPage = () => {
         duration: 3000,
       });
     } finally {
-      setIsLoading(false);
+      setIsAdding(false);
     }
   };
 
@@ -150,8 +164,40 @@ const RosterPage = () => {
     alert("not yet built");
   };
 
-  const handleRemovePlayer = (player: Player) => {
-    alert("not yet built");
+  const handleRemovePlayer = async (player: Player) => {
+    try {
+      setIsRemoving(true);
+      const response = await fetch("/api/removePlayer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ player, teamName: team.name }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to remove player");
+      }
+
+      const data = await response.json();
+      setTeam(data.team);
+      toast({
+        title: "Player removed",
+        description: "Player removed from your team",
+        variant: "default",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error removing player:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove player from your team",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsRemoving(false);
+    }
   };
 
   return (
@@ -191,8 +237,11 @@ const RosterPage = () => {
                       <TableCell>{player.pdgaNumber}</TableCell>
                       <TableCell>{player.rating}</TableCell>
                       <TableCell>
-                        <Button onClick={() => handleRemovePlayer(player)}>
-                          Remove
+                        <Button
+                          onClick={() => handleRemovePlayer(player)}
+                          disabled={isRemoving}
+                        >
+                          {isRemoving ? <Loader2 /> : "Remove"}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -294,8 +343,11 @@ const RosterPage = () => {
                     <TableCell>{player.country}</TableCell>
                     <TableCell>{player.membershipStatus}</TableCell>
                     <TableCell>
-                      <Button onClick={() => handleAddPlayer(player)}>
-                        Select
+                      <Button
+                        onClick={() => handleAddPlayer(player)}
+                        disabled={isAdding}
+                      >
+                        {isAdding ? <Loader2 /> : "Select"}
                       </Button>
                     </TableCell>
                   </TableRow>
