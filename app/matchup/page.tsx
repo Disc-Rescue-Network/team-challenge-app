@@ -1,5 +1,6 @@
 "use client";
 
+import { useMediaQuery } from "react-responsive";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,8 @@ import { Team } from "../interfaces/Team";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const MatchupPage = () => {
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+
   const [hasTeam, setHasTeam] = useState<boolean>(false);
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
 
@@ -481,36 +484,117 @@ const MatchupPage = () => {
       inactiveOpponentPlayers.length
     );
 
-    return Array.from({ length: maxRows }).map((_, index) => {
-      const player = inactivePlayers[index] || {};
-      const opponentPlayer = inactiveOpponentPlayers[index] || {};
+    if (isMobile) {
       return (
-        <TableRow key={index}>
-          <TableCell>{player.name || "N/A"}</TableCell>
-          <TableCell>
-            {player.name && (
-              <Button
-                className="max-w-[200px]"
-                onClick={() => handleTogglePlayerStatus(player, true)}
-              >
-                Activate {player.name}
-              </Button>
-            )}
-          </TableCell>
-          <TableCell>{opponentPlayer.name || "N/A"}</TableCell>
-          <TableCell>
-            {opponentPlayer.name && (
-              <Button
-                className="max-w-[200px]"
-                onClick={() => handleTogglePlayerStatus(opponentPlayer, false)}
-              >
-                Activate {opponentPlayer.name}
-              </Button>
-            )}
-          </TableCell>
-        </TableRow>
+        <div className="flex flex-col">
+          <div className="flex flex-col">
+            <h3 className="text-center font-bold">My Team</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Player</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {inactivePlayers.map((player, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{player.name || "N/A"}</TableCell>
+                    <TableCell>
+                      {player.name && (
+                        <Button
+                          className="max-w-[200px]"
+                          onClick={() => handleTogglePlayerStatus(player, true)}
+                        >
+                          Activate {player.name}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex flex-col mt-4">
+            <h3 className="text-center font-bold">Opponent Team</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Player</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {inactiveOpponentPlayers.map((player, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{player.name || "N/A"}</TableCell>
+                    <TableCell>
+                      {player.name && (
+                        <Button
+                          className="max-w-[200px]"
+                          onClick={() =>
+                            handleTogglePlayerStatus(player, false)
+                          }
+                        >
+                          Activate {player.name}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       );
-    });
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>My Team</TableHead>
+            <TableHead>Action</TableHead>
+            <TableHead>Opponent Team</TableHead>
+            <TableHead>Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: maxRows }).map((_, index) => {
+            const player = inactivePlayers[index] || {};
+            const opponentPlayer = inactiveOpponentPlayers[index] || {};
+            return (
+              <TableRow key={index}>
+                <TableCell>{player.name || "N/A"}</TableCell>
+                <TableCell>
+                  {player.name && (
+                    <Button
+                      className="max-w-[200px]"
+                      onClick={() => handleTogglePlayerStatus(player, true)}
+                    >
+                      Activate {player.name}
+                    </Button>
+                  )}
+                </TableCell>
+                <TableCell>{opponentPlayer.name || "N/A"}</TableCell>
+                <TableCell>
+                  {opponentPlayer.name && (
+                    <Button
+                      className="max-w-[200px]"
+                      onClick={() =>
+                        handleTogglePlayerStatus(opponentPlayer, true)
+                      }
+                    >
+                      Activate {opponentPlayer.name}
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    );
   };
 
   const handleTogglePlayerStatus = async (
@@ -882,23 +966,11 @@ const MatchupPage = () => {
                     <CardHeader>
                       <CardTitle>Inactive Players</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>My Team</TableHead>
-                            <TableHead>Action</TableHead>
-                            <TableHead>Opponent Team</TableHead>
-                            <TableHead>Action</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>{renderInactivePlayers()}</TableBody>
-                      </Table>
-                    </CardContent>
+                    <CardContent>{renderInactivePlayers()}</CardContent>
                   </Card>
                 </>
               )}
-              {!selectedOpponent && opponents.length > 0 ? (
+              {!selectedOpponent && opponents.length > 0 && (
                 <Card className="border-none ml-0 pl-0">
                   <CardHeader className="border-none ml-0 pl-0">
                     <CardTitle>Select Opponent Team</CardTitle>
@@ -937,8 +1009,6 @@ const MatchupPage = () => {
                     </Table>
                   </CardContent>
                 </Card>
-              ) : (
-                <> No teams to select </>
               )}
             </CardContent>
           </Card>
