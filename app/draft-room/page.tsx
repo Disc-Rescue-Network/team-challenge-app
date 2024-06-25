@@ -17,12 +17,19 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const DraftRoom = () => {
-  const { teamDraft: team, selectedOpponentDraft: selectedOpponent } =
-    useDraft();
+  const {
+    teamDraft: team,
+    selectedOpponentDraft: selectedOpponent,
+    setTeamDraft: setTeam,
+    setSelectedOpponentDraft: setSelectedOpponent,
+  } = useDraft();
 
   const [draftOrder, setDraftOrder] = useState<"ourTeam" | "theirTeam">(
     "ourTeam"
   );
+  const [draftOrderList, setDraftOrderList] = useState<
+    ("ourTeam" | "theirTeam")[]
+  >([]);
   const [draftBoard, setDraftBoard] = useState<{
     ourTeam: Player[];
     theirTeam: Player[];
@@ -58,7 +65,9 @@ const DraftRoom = () => {
         draftBoard.ourTeam.length === draftBoard.theirTeam.length
       ) {
         // Our turn and we are going first in the round
+        console.log("Our turn and we are going first in the round");
         suggestPlayerToPutUp();
+        console.log("Suggested player", suggestedPlayer);
       } else if (
         draftOrder === "ourTeam" &&
         draftBoard.ourTeam.length < draftBoard.theirTeam.length
@@ -81,7 +90,7 @@ const DraftRoom = () => {
     } else {
       setSuggestedPlayer(null);
     }
-  }, [currentDraftTeam, draftBoard]);
+  }, [currentDraftTeam, draftBoard, draftOrder, suggestedPlayer]);
 
   const suggestPlayerToPutUp = () => {
     // Suggest the best player to put up logic...
@@ -117,6 +126,59 @@ const DraftRoom = () => {
     setSuggestedPlayer(bestMatch);
   };
 
+  useEffect(() => {
+    const savedDraftContext = localStorage.getItem("draftContext");
+    if (savedDraftContext) {
+      const {
+        team,
+        selectedOpponent,
+        draftOrder,
+        draftBoard,
+        currentDraftTeam,
+        ourAvailablePlayers,
+        theirAvailablePlayers,
+        round,
+      } = JSON.parse(savedDraftContext);
+
+      setDraftOrder(draftOrder);
+      setDraftBoard(draftBoard);
+      setCurrentDraftTeam(currentDraftTeam);
+      setOurAvailablePlayers(ourAvailablePlayers);
+      setTheirAvailablePlayers(theirAvailablePlayers);
+      setRound(round);
+
+      setTeam(team);
+      setSelectedOpponent(selectedOpponent);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (team && selectedOpponent) {
+      localStorage.setItem(
+        "draftContext",
+        JSON.stringify({
+          team,
+          selectedOpponent,
+          draftOrder,
+          draftBoard,
+          currentDraftTeam,
+          ourAvailablePlayers,
+          theirAvailablePlayers,
+          round,
+        })
+      );
+    }
+  }, [
+    team,
+    selectedOpponent,
+    draftOrder,
+    draftBoard,
+    currentDraftTeam,
+    ourAvailablePlayers,
+    theirAvailablePlayers,
+    round,
+  ]);
+
   const handleToggleDraftOrder = (order: "ourTeam" | "theirTeam") => {
     setDraftOrder(order);
     setCurrentDraftTeam(order); // Set the initial draft team
@@ -142,23 +204,62 @@ const DraftRoom = () => {
       console.log("Their team", draftBoard.theirTeam);
     }
 
+    // Remove the player from the suggestedPlayer state if they are drafted
+    if (player === suggestedPlayer) {
+      setSuggestedPlayer(null);
+    }
+
     const totalPicks = draftBoard.ourTeam.length + draftBoard.theirTeam.length;
 
-    // Determine the current round and pick within the round
-    const currentRound = Math.floor(totalPicks / 2);
-    const isOurTurn = totalPicks % 2 === 0;
-
-    // Determine the next team to draft based on the round and current turn
-    const nextDraftTeam =
-      currentRound % 2 === 0
-        ? isOurTurn
-          ? "ourTeam"
-          : "theirTeam"
-        : isOurTurn
-        ? "theirTeam"
-        : "ourTeam";
-
+    const nextDraftTeam: "ourTeam" | "theirTeam" = draftOrderList[totalPicks];
     setCurrentDraftTeam(nextDraftTeam);
+  };
+
+  const generateDraftOrder = (
+    firstPick: "ourTeam" | "theirTeam",
+    totalRounds: number
+  ): ("ourTeam" | "theirTeam")[] => {
+    const draftOrder: ("ourTeam" | "theirTeam")[] = [];
+    for (let round = 0; round < totalRounds; round++) {
+      if (round % 2 === 0) {
+        draftOrder.push(
+          ...((firstPick === "ourTeam"
+            ? ["ourTeam", "theirTeam"]
+            : ["theirTeam", "ourTeam"]) as ("ourTeam" | "theirTeam")[])
+        );
+      } else {
+        draftOrder.push(
+          ...((firstPick === "ourTeam"
+            ? ["theirTeam", "ourTeam"]
+            : ["ourTeam", "theirTeam"]) as ("ourTeam" | "theirTeam")[])
+        );
+      }
+    }
+    return draftOrder;
+  };
+
+  useEffect(() => {
+    if (team && selectedOpponent) {
+      setInitialOurTeamLength(team.players.length);
+      setInitialTheirTeamLength(selectedOpponent.players.length);
+      const totalRounds = Math.ceil(
+        (team.players.length + selectedOpponent.players.length) / 2
+      );
+      const generatedDraftOrder = generateDraftOrder(draftOrder, totalRounds);
+      console.log("Generated draft order", generatedDraftOrder);
+      setDraftOrderList(generatedDraftOrder);
+    }
+  }, [team, selectedOpponent, draftOrder]);
+
+  const resetDraft = () => {
+    localStorage.removeItem("draftContext");
+    setDraftOrder("ourTeam");
+    setDraftBoard({ ourTeam: [], theirTeam: [] });
+    setRound(1);
+    setCurrentDraftTeam("ourTeam");
+    setSuggestedPlayer(null);
+    setOurAvailablePlayers(team?.players || []);
+    setTheirAvailablePlayers(selectedOpponent?.players || []);
   };
 
   return (
@@ -167,17 +268,20 @@ const DraftRoom = () => {
         <Label>Starting Pick:</Label>
         <div className="flex flex-row gap-4 ">
           <Button
-            variant={draftOrder === "ourTeam" ? "destructive" : "secondary"}
+            variant={draftOrder === "ourTeam" ? "outline" : "secondary"}
             onClick={() => handleToggleDraftOrder("ourTeam")}
           >
             {team?.name} Draft {draftOrder === "ourTeam" ? "First" : "Second"}
           </Button>
           <Button
-            variant={draftOrder === "theirTeam" ? "destructive" : "secondary"}
+            variant={draftOrder === "theirTeam" ? "outline" : "secondary"}
             onClick={() => handleToggleDraftOrder("theirTeam")}
           >
             {selectedOpponent?.name} Draft{" "}
             {draftOrder === "theirTeam" ? "First" : "Second"}
+          </Button>
+          <Button variant="destructive" onClick={resetDraft}>
+            Reset Draft
           </Button>
         </div>
       </div>
