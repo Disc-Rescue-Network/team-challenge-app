@@ -4,13 +4,20 @@ import { Team } from "@/app/interfaces/Team";
 
 export async function POST(req: NextRequest) {
   try {
-    const { player, teamName } = await req.json();
+    console.log("Adding player to team...");
+    const { player, teamName, isOpponent } = await req.json();
+    console.log("isOpponent", isOpponent);
+    console.log("teamName", teamName);
+    console.log("player", player);
 
     // List the blobs to find the unique URL for the team JSON file
     const { blobs } = await list();
+    console.log("blobs", blobs);
+    const prefix = isOpponent ? "opponent_" : "myteam_";
     const teamBlob = blobs.find((blob) =>
-      blob.pathname.startsWith(`myteam_${teamName}.json`)
+      blob.pathname.startsWith(`${prefix}${teamName}.json`)
     );
+    console.log("teamBlob", teamBlob);
 
     if (!teamBlob) {
       throw new Error(`Team file for ${teamName} not found`);
@@ -41,7 +48,7 @@ export async function POST(req: NextRequest) {
     team.players.push(player);
 
     // Upload the updated team data back to the blob without adding a random suffix
-    await put(`myteam_${teamName}.json`, JSON.stringify(team), {
+    await put(`${prefix}${teamName}.json`, JSON.stringify(team), {
       access: "public",
       contentType: "application/json",
       addRandomSuffix: false,
