@@ -749,9 +749,21 @@ const MatchupPage = () => {
   };
 
   const goToDraftRoom = () => {
-    setTeamDraft(team); // Assuming `team` is your state variable
-    setSelectedOpponentDraft(selectedOpponent); // Assuming `selectedOpponent` is your state variable
-    router.push("/draft-room");
+    if (team && selectedOpponent) {
+      setTeamDraft(team); // Assuming `team` is your state variable
+      setSelectedOpponentDraft(selectedOpponent); // Assuming `selectedOpponent` is your state variable
+      router.push("/draft-room");
+    } else {
+      console.error(
+        "Both team and selectedOpponent must be set before going to the draft room."
+      );
+      toast({
+        title: "Error",
+        description: "Please select a team and opponent to proceed",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   return (
