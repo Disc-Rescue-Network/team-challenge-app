@@ -1,5 +1,6 @@
 import { Player } from "@/app/interfaces/Player";
 import { NextResponse } from "next/server";
+import { checkCache, setCache } from "../utils/cache";
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +11,15 @@ export async function POST(request: Request) {
         { error: "First name is required" },
         { status: 400 }
       );
+    }
+
+    const cacheKey = `${firstName.toLowerCase()}_${(
+      lastName || ""
+    ).toLowerCase()}`;
+    const cachedData = checkCache(cacheKey);
+
+    if (cachedData) {
+      return NextResponse.json({ players: cachedData });
     }
 
     const response = await fetch(
@@ -36,7 +46,17 @@ export async function POST(request: Request) {
     }
 
     const { players }: { players: Player[] } = await response.json();
-    return NextResponse.json({ players });
+
+    // Set active to true and isEditing to false for each player
+    const modifiedPlayers = players.map((player) => ({
+      ...player,
+      active: true,
+      isEditing: false,
+    }));
+
+    setCache(cacheKey, modifiedPlayers);
+
+    return NextResponse.json({ players: modifiedPlayers });
   } catch (error) {
     console.error(`Error fetching data: ${error}`);
     return NextResponse.json(
