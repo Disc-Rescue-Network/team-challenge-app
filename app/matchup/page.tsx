@@ -423,6 +423,7 @@ const MatchupPage = () => {
                 <Button
                   variant="ghost"
                   size="icon"
+                  className="max-w-[200px]"
                   onClick={() => handleSaveRating(opponentPlayer)}
                 >
                   <Save size={16} />
@@ -434,6 +435,7 @@ const MatchupPage = () => {
                 <Button
                   variant="ghost"
                   size="icon"
+                  className="max-w-[200px]"
                   onClick={() => handleEditRating(opponentPlayer)}
                 >
                   <Pencil size={16} />
@@ -483,7 +485,10 @@ const MatchupPage = () => {
           <TableCell>{player.name || "N/A"}</TableCell>
           <TableCell>
             {player.name && (
-              <Button onClick={() => handleTogglePlayerStatus(player, true)}>
+              <Button
+                className="max-w-[200px]"
+                onClick={() => handleTogglePlayerStatus(player, true)}
+              >
                 Activate {player.name}
               </Button>
             )}
@@ -492,6 +497,7 @@ const MatchupPage = () => {
           <TableCell>
             {opponentPlayer.name && (
               <Button
+                className="max-w-[200px]"
                 onClick={() => handleTogglePlayerStatus(opponentPlayer, false)}
               >
                 Activate {opponentPlayer.name}
