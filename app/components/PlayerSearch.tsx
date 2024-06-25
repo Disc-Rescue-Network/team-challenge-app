@@ -20,12 +20,25 @@ import {
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function PlayerSearch() {
   const [name, setName] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 1080);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const handleSearch = async () => {
     try {
@@ -103,7 +116,7 @@ function PlayerSearch() {
               <TableBody>
                 <TableRow>
                   <TableCell
-                    colSpan={window.innerWidth <= 768 ? 4 : 8}
+                    colSpan={isMobile ? 4 : 8}
                     className="text-center pt-10"
                   >
                     {isLoading ? (

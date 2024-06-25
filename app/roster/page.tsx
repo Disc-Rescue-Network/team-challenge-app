@@ -208,6 +208,19 @@ const RosterPage = () => {
     }
   };
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 1080);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
     <div className="flex flex-1 flex-col h-3/5 gap-6 p-2 lg:p-4 lg:gap-6">
       {hasTeam ? (
@@ -330,7 +343,7 @@ const RosterPage = () => {
               <TableBody>
                 <TableRow>
                   <TableCell
-                    colSpan={window.innerWidth <= 768 ? 4 : 8}
+                    colSpan={isMobile ? 4 : 8}
                     className="text-center pt-10"
                   >
                     {isSearching ? (
