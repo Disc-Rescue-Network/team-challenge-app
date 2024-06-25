@@ -76,12 +76,16 @@ const RosterPage = () => {
   const handleAddPlayer = async (player: Player) => {
     try {
       setIsAdding(true);
-      const response = await fetch("/api/addPlayerToMyTeam", {
+      const response = await fetch("/api/addPlayerToTeam", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ player, teamName: team.name }),
+        body: JSON.stringify({
+          player,
+          teamName: team.name,
+          isOpponent: false,
+        }),
       });
 
       if (response.status === 400) {
@@ -172,7 +176,11 @@ const RosterPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ player, teamName: team.name }),
+        body: JSON.stringify({
+          player,
+          teamName: team.name,
+          isOpponent: false,
+        }),
       });
 
       if (!response.ok) {
