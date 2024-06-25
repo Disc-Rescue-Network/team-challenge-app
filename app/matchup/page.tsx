@@ -69,90 +69,91 @@ const MatchupPage = () => {
   //   );
 
   return (
-    <div>
-      <h1>Matchup</h1>
-      <div>
-        <Input
-          type="text"
-          value={teamName}
-          onChange={(e) => setTeamName(e.target.value)}
-          placeholder="Enter your team name"
-        />
-        <Input
-          type="text"
-          value={opponentName}
-          onChange={(e) => setOpponentName(e.target.value)}
-          placeholder="Enter opponent team name"
-        />
-        <Button onClick={handleSaveTeams}>Save Teams</Button>
-      </div>
+    <div>Coming Soon</div>
+    // <div className="grid grid-cols-1 gap-4 p-4">
+    //   <h1>Matchup</h1>
+    //   <div>
+    //     <Input
+    //       type="text"
+    //       value={teamName}
+    //       onChange={(e) => setTeamName(e.target.value)}
+    //       placeholder="Enter your team name"
+    //     />
+    //     <Input
+    //       type="text"
+    //       value={opponentName}
+    //       onChange={(e) => setOpponentName(e.target.value)}
+    //       placeholder="Enter opponent team name"
+    //     />
+    //     <Button onClick={handleSaveTeams}>Save Teams</Button>
+    //   </div>
 
-      <h2>Player Search</h2>
-      <Input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Enter player's name"
-      />
-      <Button onClick={handleSearch}>Search</Button>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>PDGA Number</TableHead>
-            <TableHead>Rating</TableHead>
-            <TableHead>Class</TableHead>
-            <TableHead>City</TableHead>
-            <TableHead>State</TableHead>
-            <TableHead>Country</TableHead>
-            <TableHead>Membership Status</TableHead>
-            <TableHead>Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {results.map((player, index) => (
-            <TableRow key={index}>
-              <TableCell>{player.name}</TableCell>
-              <TableCell>{player.pdgaNumber}</TableCell>
-              <TableCell>{player.rating}</TableCell>
-              <TableCell>{player.class}</TableCell>
-              <TableCell>{player.city}</TableCell>
-              <TableCell>{player.state}</TableCell>
-              <TableCell>{player.country}</TableCell>
-              <TableCell>{player.membershipStatus}</TableCell>
-              <TableCell>
-                <Button onClick={() => handleAddPlayer(player, false)}>
-                  Add to Team
-                </Button>
-                <Button onClick={() => handleAddPlayer(player, true)}>
-                  Add to Opponent
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    //   <h2>Player Search</h2>
+    //   <Input
+    //     type="text"
+    //     value={name}
+    //     onChange={(e) => setName(e.target.value)}
+    //     placeholder="Enter player's name"
+    //   />
+    //   <Button onClick={handleSearch}>Search</Button>
+    //   <Table>
+    //     <TableHeader>
+    //       <TableRow>
+    //         <TableHead>Name</TableHead>
+    //         <TableHead>PDGA Number</TableHead>
+    //         <TableHead>Rating</TableHead>
+    //         <TableHead>Class</TableHead>
+    //         <TableHead>City</TableHead>
+    //         <TableHead>State</TableHead>
+    //         <TableHead>Country</TableHead>
+    //         <TableHead>Membership Status</TableHead>
+    //         <TableHead>Action</TableHead>
+    //       </TableRow>
+    //     </TableHeader>
+    //     <TableBody>
+    //       {results.map((player, index) => (
+    //         <TableRow key={index}>
+    //           <TableCell>{player.name}</TableCell>
+    //           <TableCell>{player.pdgaNumber}</TableCell>
+    //           <TableCell>{player.rating}</TableCell>
+    //           <TableCell>{player.class}</TableCell>
+    //           <TableCell>{player.city}</TableCell>
+    //           <TableCell>{player.state}</TableCell>
+    //           <TableCell>{player.country}</TableCell>
+    //           <TableCell>{player.membershipStatus}</TableCell>
+    //           <TableCell>
+    //             <Button onClick={() => handleAddPlayer(player, false)}>
+    //               Add to Team
+    //             </Button>
+    //             <Button onClick={() => handleAddPlayer(player, true)}>
+    //               Add to Opponent
+    //             </Button>
+    //           </TableCell>
+    //         </TableRow>
+    //       ))}
+    //     </TableBody>
+    //   </Table>
 
-      <h2>Matchup View</h2>
-      <div>
-        <h3>{teamName}</h3>
-        {/* <ul>
-          {sortedTeamPlayers.map((player) => (
-            <li key={player.pdgaNumber}>
-              {player.name} - {player.rating}
-            </li>
-          ))}
-        </ul>
-        <h3>{opponentName}</h3>
-        <ul>
-          {sortedOpponentPlayers.map((player) => (
-            <li key={player.pdgaNumber}>
-              {player.name} - {player.rating}
-            </li>
-          ))}
-        </ul> */}
-      </div>
-    </div>
+    //   <h2>Matchup View</h2>
+    //   <div>
+    //     <h3>{teamName}</h3>
+    //     {/* <ul>
+    //       {sortedTeamPlayers.map((player) => (
+    //         <li key={player.pdgaNumber}>
+    //           {player.name} - {player.rating}
+    //         </li>
+    //       ))}
+    //     </ul>
+    //     <h3>{opponentName}</h3>
+    //     <ul>
+    //       {sortedOpponentPlayers.map((player) => (
+    //         <li key={player.pdgaNumber}>
+    //           {player.name} - {player.rating}
+    //         </li>
+    //       ))}
+    //     </ul> */}
+    //   </div>
+    // </div>
   );
 };
 

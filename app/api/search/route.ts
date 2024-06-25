@@ -1,6 +1,5 @@
 import { Player } from "@/app/interfaces/Player";
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer";
 
 export async function POST(request: Request) {
   try {
@@ -13,42 +12,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const searchUrl = `https://www.pdga.com/players?FirstName=${encodeURIComponent(
-      firstName
-    )}&LastName=${encodeURIComponent(lastName || "")}`;
-
-    const browser = await puppeteer.launch({
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: true,
+    const response = await fetch("http://localhost:3001/search_pdga", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ firstName, lastName }),
     });
 
-    const page = await browser.newPage();
-    await page.goto(searchUrl, {
-      waitUntil: "domcontentloaded",
-      timeout: 120000,
-    });
+    if (!response.ok) {
+      throw new Error("Failed to fetch data from external API");
+    }
 
-    const players: Player[] = await page.evaluate(() => {
-      const rows = Array.from(
-        document.querySelectorAll("table.views-table tbody tr")
-      );
-      return rows.map((row) => {
-        const cells = row.querySelectorAll("td");
-        return {
-          name: cells[0]?.innerText?.trim() || "",
-          pdgaNumber: parseInt(cells[1]?.innerText?.trim() || "0"),
-          rating: parseInt(cells[2]?.innerText?.trim() || "0"),
-          class: cells[3]?.innerText?.trim() || "",
-          city: cells[4]?.innerText?.trim() || "",
-          state: cells[5]?.innerText?.trim() || "",
-          country: cells[6]?.innerText?.trim() || "",
-          membershipStatus: cells[7]?.innerText?.trim() || "",
-        };
-      });
-    });
-
-    await browser.close();
+    const { players }: { players: Player[] } = await response.json();
     return NextResponse.json({ players });
   } catch (error) {
     console.error(`Error fetching data: ${error}`);
