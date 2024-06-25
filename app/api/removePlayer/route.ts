@@ -25,20 +25,12 @@ export async function POST(req: NextRequest) {
     const response = await fetch(cacheBustingUrl, { cache: "no-store" });
     const team: Team = await response.json();
 
-    // Check if the player already exists on the team
-    const playerExists = team.players.some(
-      (p) => p.pdgaNumber === player.pdgaNumber
+    // Remove the player from the team's players array
+    const updatedPlayers = team.players.filter(
+      (p) => p.pdgaNumber !== player.pdgaNumber
     );
 
-    if (playerExists) {
-      return NextResponse.json(
-        { message: "Player already exists on the team", team },
-        { status: 400 }
-      );
-    }
-
-    // Add the new player to the team's players array
-    team.players.push(player);
+    team.players = updatedPlayers;
 
     // Upload the updated team data back to the blob without adding a random suffix
     await put(`myteam_${teamName}.json`, JSON.stringify(team), {
@@ -47,11 +39,11 @@ export async function POST(req: NextRequest) {
       addRandomSuffix: false,
     });
 
-    return NextResponse.json({ message: "Player added successfully", team });
+    return NextResponse.json({ message: "Player removed successfully", team });
   } catch (error: any) {
-    console.error("Error adding player:", error);
+    console.error("Error removing player:", error);
     return NextResponse.json(
-      { message: "Error adding player", error },
+      { message: "Error removing player", error },
       { status: 500 }
     );
   }
