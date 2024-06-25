@@ -211,7 +211,7 @@ const RosterPage = () => {
   return (
     <div className="flex flex-1 flex-col h-3/5 gap-6 p-2 lg:p-4 lg:gap-6">
       {hasTeam ? (
-        <Card className="mr-4">
+        <Card className="">
           <CardHeader>
             <CardTitle>{team.name}</CardTitle>
           </CardHeader>
@@ -263,7 +263,7 @@ const RosterPage = () => {
           </CardFooter>
         </Card>
       ) : (
-        <Card className="mr-4">
+        <Card className="">
           <CardHeader>
             <CardTitle>Create Team</CardTitle>
           </CardHeader>
@@ -281,7 +281,7 @@ const RosterPage = () => {
         </Card>
       )}
 
-      <Card className="mr-4">
+      <Card className="">
         <CardHeader>
           <CardTitle>Player Search</CardTitle>
         </CardHeader>
@@ -307,7 +307,7 @@ const RosterPage = () => {
         </CardFooter>
       </Card>
 
-      <Card className="mr-4">
+      <Card className="">
         <CardHeader>
           <CardTitle>Search Results</CardTitle>
         </CardHeader>
@@ -329,7 +329,10 @@ const RosterPage = () => {
             {results.length === 0 ? (
               <TableBody>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center pt-10">
+                  <TableCell
+                    colSpan={window.innerWidth <= 768 ? 4 : 8}
+                    className="text-center pt-10"
+                  >
                     {isSearching ? (
                       <Loader2 size="32" />
                     ) : (

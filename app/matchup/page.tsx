@@ -1,5 +1,6 @@
 "use client";
 
+import { useMediaQuery } from "react-responsive";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,8 @@ import { Team } from "../interfaces/Team";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const MatchupPage = () => {
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+
   const [hasTeam, setHasTeam] = useState<boolean>(false);
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
 
@@ -408,11 +411,13 @@ const MatchupPage = () => {
       return (
         <TableRow key={index}>
           <TableCell>{player.name || "N/A"}</TableCell>
-          <TableCell>{player.rating || "N/A"}</TableCell>
-          <TableCell>vs.</TableCell>
-          <TableCell>
+          <TableCell className="min-w-[60px]">
+            {player.rating || "N/A"}
+          </TableCell>
+          <TableCell> vs.</TableCell>
+          <TableCell className="min-w-[100px]">
             {opponentPlayer.isEditing ? (
-              <>
+              <div className="flex flex-row gap-2">
                 <Input
                   type="number"
                   value={opponentPlayer.rating || ""}
@@ -428,7 +433,7 @@ const MatchupPage = () => {
                 >
                   <Save size={16} />
                 </Button>
-              </>
+              </div>
             ) : (
               <>
                 <span>{opponentPlayer.rating || 0}</span>
@@ -443,7 +448,9 @@ const MatchupPage = () => {
               </>
             )}
           </TableCell>
-          <TableCell>{opponentPlayer.name || "N/A"}</TableCell>
+          <TableCell className="min-w-fit">
+            {opponentPlayer.name || "N/A"}
+          </TableCell>
           <TableCell className="flex flex-col gap-4 ">
             {player.name && (
               <Button onClick={() => handleTogglePlayer(player, "myTeam")}>
@@ -477,36 +484,117 @@ const MatchupPage = () => {
       inactiveOpponentPlayers.length
     );
 
-    return Array.from({ length: maxRows }).map((_, index) => {
-      const player = inactivePlayers[index] || {};
-      const opponentPlayer = inactiveOpponentPlayers[index] || {};
+    if (isMobile) {
       return (
-        <TableRow key={index}>
-          <TableCell>{player.name || "N/A"}</TableCell>
-          <TableCell>
-            {player.name && (
-              <Button
-                className="max-w-[200px]"
-                onClick={() => handleTogglePlayerStatus(player, true)}
-              >
-                Activate {player.name}
-              </Button>
-            )}
-          </TableCell>
-          <TableCell>{opponentPlayer.name || "N/A"}</TableCell>
-          <TableCell>
-            {opponentPlayer.name && (
-              <Button
-                className="max-w-[200px]"
-                onClick={() => handleTogglePlayerStatus(opponentPlayer, false)}
-              >
-                Activate {opponentPlayer.name}
-              </Button>
-            )}
-          </TableCell>
-        </TableRow>
+        <div className="flex flex-col">
+          <div className="flex flex-col">
+            <h3 className="text-center font-bold">My Team</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Player</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {inactivePlayers.map((player, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{player.name || "N/A"}</TableCell>
+                    <TableCell>
+                      {player.name && (
+                        <Button
+                          className="max-w-[200px]"
+                          onClick={() => handleTogglePlayerStatus(player, true)}
+                        >
+                          Activate {player.name}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex flex-col mt-4">
+            <h3 className="text-center font-bold">Opponent Team</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Player</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {inactiveOpponentPlayers.map((player, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{player.name || "N/A"}</TableCell>
+                    <TableCell>
+                      {player.name && (
+                        <Button
+                          className="max-w-[200px]"
+                          onClick={() =>
+                            handleTogglePlayerStatus(player, false)
+                          }
+                        >
+                          Activate {player.name}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       );
-    });
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>My Team</TableHead>
+            <TableHead>Action</TableHead>
+            <TableHead>Opponent Team</TableHead>
+            <TableHead>Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: maxRows }).map((_, index) => {
+            const player = inactivePlayers[index] || {};
+            const opponentPlayer = inactiveOpponentPlayers[index] || {};
+            return (
+              <TableRow key={index}>
+                <TableCell>{player.name || "N/A"}</TableCell>
+                <TableCell>
+                  {player.name && (
+                    <Button
+                      className="max-w-[200px]"
+                      onClick={() => handleTogglePlayerStatus(player, true)}
+                    >
+                      Activate {player.name}
+                    </Button>
+                  )}
+                </TableCell>
+                <TableCell>{opponentPlayer.name || "N/A"}</TableCell>
+                <TableCell>
+                  {opponentPlayer.name && (
+                    <Button
+                      className="max-w-[200px]"
+                      onClick={() =>
+                        handleTogglePlayerStatus(opponentPlayer, true)
+                      }
+                    >
+                      Activate {opponentPlayer.name}
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    );
   };
 
   const handleTogglePlayerStatus = async (
@@ -563,7 +651,7 @@ const MatchupPage = () => {
         </TabsList>
         <TabsContent value="teamBuilder" className="grid grid-cols-1 gap-6">
           {hasTeam ? (
-            <Card className="mr-4">
+            <Card className="">
               <CardHeader>
                 <CardTitle>{team.name}</CardTitle>
               </CardHeader>
@@ -614,7 +702,7 @@ const MatchupPage = () => {
               </CardContent>
             </Card>
           ) : (
-            <Card className="mr-4">
+            <Card className="">
               <CardHeader>
                 <CardTitle>No Team Found</CardTitle>
               </CardHeader>
@@ -627,13 +715,13 @@ const MatchupPage = () => {
           )}
 
           <Tabs defaultValue="selectTeam" className="w-full">
-            <TabsList className="grid grid-cols-2 m-auto justify-center w-80 max-w-[400px] mb-[10px]">
+            <TabsList className="grid grid-cols-2 m-auto justify-center w-full max-w-[400px] mb-[10px] ">
               <TabsTrigger value="selectTeam">Select Opponent</TabsTrigger>
               <TabsTrigger value="createTeam">Create Opponent</TabsTrigger>
             </TabsList>
-            <TabsContent value="selectTeam" className="w-11/12">
+            <TabsContent value="selectTeam" className="w-full">
               {opponents.length > 0 && (
-                <Card className="mr-4">
+                <Card className="mr-0">
                   <CardHeader>
                     <CardTitle>Select Opponent Team</CardTitle>
                   </CardHeader>
@@ -671,8 +759,8 @@ const MatchupPage = () => {
                 </Card>
               )}
             </TabsContent>
-            <TabsContent value="createTeam" className="w-11/12">
-              <Card className="mr-4">
+            <TabsContent value="createTeam" className="w-full">
+              <Card className="">
                 <CardHeader>
                   <CardTitle>Create Opponent Team</CardTitle>
                 </CardHeader>
@@ -697,7 +785,7 @@ const MatchupPage = () => {
           </Tabs>
 
           {selectedOpponent && (
-            <Card className="mr-4">
+            <Card className="">
               <CardHeader>
                 <CardTitle>{selectedOpponent.name}</CardTitle>
               </CardHeader>
@@ -751,7 +839,7 @@ const MatchupPage = () => {
 
           {selectedOpponent && (
             <>
-              <Card className="mr-4">
+              <Card className="">
                 <CardHeader>
                   <CardTitle>Player Search</CardTitle>
                 </CardHeader>
@@ -777,7 +865,7 @@ const MatchupPage = () => {
                 </CardFooter>
               </Card>
 
-              <Card className="mr-4">
+              <Card className="">
                 <CardHeader>
                   <CardTitle>Search Results</CardTitle>
                 </CardHeader>
@@ -847,8 +935,8 @@ const MatchupPage = () => {
             </>
           )}
         </TabsContent>
-        <TabsContent value="matchupViewer" className="w-11/12">
-          <Card className="mr-4">
+        <TabsContent value="matchupViewer" className="w-full">
+          <Card className="">
             <CardHeader>
               <CardTitle>Matchup Viewer</CardTitle>
             </CardHeader>
@@ -874,27 +962,15 @@ const MatchupPage = () => {
                     </TableHeader>
                     <TableBody>{renderMatchups()}</TableBody>
                   </Table>
-                  <Card className="mr-4 mt-4">
+                  <Card className=" mt-4">
                     <CardHeader>
                       <CardTitle>Inactive Players</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>My Team</TableHead>
-                            <TableHead>Action</TableHead>
-                            <TableHead>Opponent Team</TableHead>
-                            <TableHead>Action</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>{renderInactivePlayers()}</TableBody>
-                      </Table>
-                    </CardContent>
+                    <CardContent>{renderInactivePlayers()}</CardContent>
                   </Card>
                 </>
               )}
-              {!selectedOpponent && opponents.length > 0 ? (
+              {!selectedOpponent && opponents.length > 0 && (
                 <Card className="border-none ml-0 pl-0">
                   <CardHeader className="border-none ml-0 pl-0">
                     <CardTitle>Select Opponent Team</CardTitle>
@@ -910,7 +986,9 @@ const MatchupPage = () => {
                       <TableBody>
                         {opponents.map((opponent, index) => (
                           <TableRow key={index}>
-                            <TableCell>{opponent.name}</TableCell>
+                            <TableCell className="min-w-fit">
+                              {opponent.name}
+                            </TableCell>
                             <TableCell className="flex flex-row gap-4 max-w-[200px]">
                               <Button
                                 onClick={() => handleSelectOpponent(opponent)}
@@ -931,8 +1009,6 @@ const MatchupPage = () => {
                     </Table>
                   </CardContent>
                 </Card>
-              ) : (
-                <> No teams to select </>
               )}
             </CardContent>
           </Card>

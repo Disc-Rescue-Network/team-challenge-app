@@ -54,8 +54,8 @@ function PlayerSearch() {
   };
 
   return (
-    <div className="flex flex-1 flex-col p-4 gap-8">
-      <Card className="mr-4">
+    <div className="flex flex-1 flex-col p-3 lg:p-4 gap-8">
+      <Card>
         <CardHeader>
           <CardTitle>Player Search</CardTitle>
           {/* <CardDescription>blah blah</CardDescription> */}
@@ -81,7 +81,7 @@ function PlayerSearch() {
           </Button>
         </CardFooter>
       </Card>
-      <Card className="mr-4">
+      <Card>
         <CardHeader>
           <CardTitle>Search Results</CardTitle>
         </CardHeader>
@@ -102,7 +102,10 @@ function PlayerSearch() {
             {results.length === 0 ? (
               <TableBody>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center pt-10">
+                  <TableCell
+                    colSpan={window.innerWidth <= 768 ? 4 : 8}
+                    className="text-center pt-10"
+                  >
                     {isLoading ? (
                       <Loader2 size="32" />
                     ) : (
