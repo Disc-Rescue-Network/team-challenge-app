@@ -835,6 +835,7 @@ const MatchupPage = () => {
                             <Button
                               onClick={() => handleRemovePlayer(player, false)}
                               disabled={isRemoving}
+                              variant="destructive"
                             >
                               {isRemoving ? <Loader2 /> : "Remove"}
                             </Button>
@@ -969,6 +970,7 @@ const MatchupPage = () => {
                             <Button
                               onClick={() => handleRemovePlayer(player, true)}
                               disabled={isRemoving}
+                              variant="destructive"
                             >
                               {isRemoving ? <Loader2 /> : "Remove"}
                             </Button>

@@ -282,6 +282,7 @@ const RosterPage = () => {
                         <Button
                           onClick={() => handleRemovePlayer(player)}
                           disabled={isRemoving}
+                          variant="destructive"
                         >
                           {isRemoving ? <Loader2 /> : "Remove"}
                         </Button>
@@ -292,9 +293,9 @@ const RosterPage = () => {
               )}
             </Table>
           </CardContent>
-          <CardFooter className="border-t px-6 py-4">
+          {/* <CardFooter className="border-t px-6 py-4">
             <Button onClick={handleEditTeam}>Edit Team</Button>
-          </CardFooter>
+          </CardFooter> */}
         </Card>
       ) : (
         <Card className="">
