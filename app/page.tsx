@@ -26,8 +26,10 @@ import PlayerSearch from "./components/PlayerSearch";
 const SearchPage = () => {
   useEffect(() => {
     const keepAlive = async () => {
+      console.log("Pinging API to keep it alive");
       try {
         await fetch("https://tags-api.discrescuenetwork.com");
+        console.log("API pinged successfully");
       } catch (error) {
         console.error("Error keeping API alive:", error);
       }
