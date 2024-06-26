@@ -6,6 +6,8 @@ export async function POST(request: Request) {
   try {
     const { firstName, lastName } = await request.json();
 
+    console.log(`Searching for player: ${firstName} ${lastName}`);
+
     if (!firstName) {
       return NextResponse.json(
         { error: "First name is required" },
@@ -19,9 +21,11 @@ export async function POST(request: Request) {
     const cachedData = checkCache(cacheKey);
 
     if (cachedData) {
+      console.log("Returning cached data");
       return NextResponse.json({ players: cachedData });
     }
 
+    console.log("Fetching data from external API");
     const response = await fetch(
       "https://tags-api.discrescuenetwork.com/search_pdga",
       {
@@ -41,11 +45,15 @@ export async function POST(request: Request) {
     //   body: JSON.stringify({ firstName, lastName }),
     // });
 
+    console.log("Data fetched from external API");
+
     if (!response.ok) {
+      console.log("Failed to fetch data from external API");
       throw new Error("Failed to fetch data from external API");
     }
 
     const { players }: { players: Player[] } = await response.json();
+    console.log("Transformed data to Player[] format");
 
     // Set active to true and isEditing to false for each player
     const modifiedPlayers = players.map((player) => ({
@@ -53,8 +61,10 @@ export async function POST(request: Request) {
       active: true,
       isEditing: false,
     }));
+    console.log("Modified player data");
 
     setCache(cacheKey, modifiedPlayers);
+    console.log("Set the Cache");
 
     return NextResponse.json({ players: modifiedPlayers });
   } catch (error) {

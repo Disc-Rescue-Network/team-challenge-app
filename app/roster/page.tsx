@@ -38,6 +38,27 @@ const RosterPage = () => {
   const [isMyTeam, setIsMyTeam] = useState<boolean>(true);
 
   useEffect(() => {
+    const keepAlive = async () => {
+      console.log("Pinging API to keep it alive");
+      try {
+        await fetch("https://tags-api.discrescuenetwork.com");
+        console.log("API pinged successfully");
+      } catch (error) {
+        console.error("Error keeping API alive:", error);
+      }
+    };
+
+    // Ping the API immediately on load
+    keepAlive();
+
+    // Set interval to ping the API every 14 minutes
+    const interval = setInterval(keepAlive, 14 * 60 * 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     // Fetch the existing team data when the component mounts
     fetchTeamData();
   }, []);

@@ -766,6 +766,27 @@ const MatchupPage = () => {
     }
   };
 
+  useEffect(() => {
+    const keepAlive = async () => {
+      console.log("Pinging API to keep it alive");
+      try {
+        await fetch("https://tags-api.discrescuenetwork.com");
+        console.log("API pinged successfully");
+      } catch (error) {
+        console.error("Error keeping API alive:", error);
+      }
+    };
+
+    // Ping the API immediately on load
+    keepAlive();
+
+    // Set interval to ping the API every 14 minutes
+    const interval = setInterval(keepAlive, 14 * 60 * 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-1 flex-col h-3/5 gap-6 p-2 lg:p-4 lg:gap-6">
       <Tabs defaultValue="teamBuilder" className="w-full">

@@ -270,12 +270,14 @@ const DraftRoom = () => {
           <Button
             variant={draftOrder === "ourTeam" ? "outline" : "secondary"}
             onClick={() => handleToggleDraftOrder("ourTeam")}
+            disabled={draftBoard.ourTeam.length > 0}
           >
             {team?.name} Draft {draftOrder === "ourTeam" ? "First" : "Second"}
           </Button>
           <Button
             variant={draftOrder === "theirTeam" ? "outline" : "secondary"}
             onClick={() => handleToggleDraftOrder("theirTeam")}
+            disabled={draftBoard.ourTeam.length > 0}
           >
             {selectedOpponent?.name} Draft{" "}
             {draftOrder === "theirTeam" ? "First" : "Second"}
@@ -361,6 +363,7 @@ const DraftRoom = () => {
                   <TableCell>
                     <Button
                       onClick={() => handleDraftPlayer(player, "ourTeam")}
+                      disabled={currentDraftTeam !== "ourTeam"}
                     >
                       Draft
                     </Button>
@@ -390,6 +393,7 @@ const DraftRoom = () => {
                     <TableCell>
                       <Button
                         onClick={() => handleDraftPlayer(player, "theirTeam")}
+                        disabled={currentDraftTeam === "ourTeam"}
                       >
                         Draft
                       </Button>
