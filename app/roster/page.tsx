@@ -243,62 +243,81 @@ const RosterPage = () => {
   }, []);
 
   return (
-    <div className="flex flex-1 flex-col h-3/5 gap-6 p-2 lg:p-4 lg:gap-6">
+    <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
       {hasTeam ? (
-        <Card className="">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>{team.name}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>PDGA Number</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              {team.players.length === 0 ? (
-                <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center pt-10">
-                      {isLoading ? (
-                        <Loader2 size="32" />
-                      ) : (
-                        <Label className="text-sm">No players on team</Label>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              ) : (
-                <TableBody>
-                  {team.players.map((player, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{player.name}</TableCell>
-                      <TableCell>{player.pdgaNumber}</TableCell>
-                      <TableCell>{player.rating}</TableCell>
-                      <TableCell>
-                        <Button
-                          onClick={() => handleRemovePlayer(player)}
-                          disabled={isRemoving}
-                          variant="destructive"
-                        >
-                          {isRemoving ? <Loader2 /> : "Remove"}
-                        </Button>
-                      </TableCell>
+            {isLoading ? (
+              <div className="flex justify-center items-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Label>Please wait</Label>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">Name</TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Rating
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        PDGA Number
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Actions
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              )}
-            </Table>
+                  </TableHeader>
+                  {team.players.length === 0 ? (
+                    <TableBody>
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center pt-10">
+                          <Label className="text-sm">No players on team</Label>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  ) : (
+                    <TableBody>
+                      {team.players.map((player, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="whitespace-nowrap">
+                            {player.name}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {player.rating}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {player.pdgaNumber}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              onClick={() => handleRemovePlayer(player)}
+                              disabled={isRemoving}
+                              variant="destructive"
+                              className="whitespace-nowrap"
+                            >
+                              {isRemoving ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                "Remove"
+                              )}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  )}
+                </Table>
+              </div>
+            )}
           </CardContent>
-          {/* <CardFooter className="border-t px-6 py-4">
-            <Button onClick={handleEditTeam}>Edit Team</Button>
-          </CardFooter> */}
         </Card>
       ) : (
-        <Card className="">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Create Team</CardTitle>
           </CardHeader>
@@ -316,7 +335,7 @@ const RosterPage = () => {
         </Card>
       )}
 
-      <Card className="">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Player Search</CardTitle>
         </CardHeader>
@@ -342,65 +361,89 @@ const RosterPage = () => {
         </CardFooter>
       </Card>
 
-      <Card className="">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Search Results</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>PDGA Number</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Class</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>State</TableHead>
-                <TableHead>Country</TableHead>
-                <TableHead>Membership Status</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            {results.length === 0 ? (
-              <TableBody>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell
-                    colSpan={isMobile ? 4 : 8}
-                    className="text-center pt-10"
-                  >
-                    {isSearching ? (
-                      <Loader2 size="32" />
-                    ) : (
-                      <Label className="text-sm">No results found</Label>
-                    )}
-                  </TableCell>
+                  <TableHead className="whitespace-nowrap">Name</TableHead>
+                  <TableHead className="whitespace-nowrap">Rating</TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    PDGA Number
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap">Class</TableHead>
+                  <TableHead className="whitespace-nowrap">City</TableHead>
+                  <TableHead className="whitespace-nowrap">State</TableHead>
+                  <TableHead className="whitespace-nowrap">Country</TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    Membership Status
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap">Action</TableHead>
                 </TableRow>
-              </TableBody>
-            ) : (
-              <TableBody>
-                {results.map((player, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{player.name}</TableCell>
-                    <TableCell>{player.pdgaNumber}</TableCell>
-                    <TableCell>{player.rating}</TableCell>
-                    <TableCell>{player.class}</TableCell>
-                    <TableCell>{player.city}</TableCell>
-                    <TableCell>{player.state}</TableCell>
-                    <TableCell>{player.country}</TableCell>
-                    <TableCell>{player.membershipStatus}</TableCell>
-                    <TableCell>
-                      <Button
-                        onClick={() => handleAddPlayer(player)}
-                        disabled={isAdding}
-                      >
-                        {isAdding ? <Loader2 /> : "Select"}
-                      </Button>
+              </TableHeader>
+              {results.length === 0 ? (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center pt-10">
+                      {isSearching ? (
+                        <Loader2 size="32" className="mx-auto" />
+                      ) : (
+                        <Label className="text-sm">No results found</Label>
+                      )}
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            )}
-          </Table>
+                </TableBody>
+              ) : (
+                <TableBody>
+                  {results.map((player, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="whitespace-nowrap">
+                        {player.name}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {player.rating}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {player.pdgaNumber}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {player.class}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {player.city}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {player.state}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {player.country}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {player.membershipStatus}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => handleAddPlayer(player)}
+                          disabled={isAdding}
+                          className="whitespace-nowrap"
+                        >
+                          {isAdding ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "Select"
+                          )}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              )}
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

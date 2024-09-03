@@ -37,8 +37,6 @@ const MatchupPage = () => {
   const [hasTeam, setHasTeam] = useState<boolean>(false);
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
 
-  //   const [hasOpponent, setHasOpponent] = useState<boolean>(false);
-  //   const [opponent, setOpponent] = useState<Team>({ name: "", players: [] });
   const [opponents, setOpponents] = useState<Team[]>([]);
   const [selectedOpponent, setSelectedOpponent] = useState<Team | null>(null);
   const [createOpponentTeam, setCreateOpponentTeam] = useState<string>("");

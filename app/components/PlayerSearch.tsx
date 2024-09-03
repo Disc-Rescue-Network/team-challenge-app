@@ -52,17 +52,18 @@ function PlayerSearch() {
         body: JSON.stringify({ firstName, lastName: lastName || "" }),
       });
       const data = await response.json();
-      setResults(data.players);
-      setIsLoading(false);
+      setResults(data.players || []);
     } catch (error) {
       console.error(`Error fetching data: ${error}`);
-      setIsLoading(false);
+      setResults([]);
       toast({
         title: "Error",
         description: "Failed to fetch data",
         variant: "destructive",
         duration: 3000,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -99,51 +100,73 @@ function PlayerSearch() {
           <CardTitle>Search Results</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>PDGA Number</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Class</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>State</TableHead>
-                <TableHead>Country</TableHead>
-                <TableHead>Membership Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            {results.length === 0 ? (
-              <TableBody>
-                <TableRow>
-                  <TableCell
-                    colSpan={isMobile ? 4 : 8}
-                    className="text-center pt-10"
-                  >
-                    {isLoading ? (
-                      <Loader2 size="32" />
-                    ) : (
-                      <Label className="text-sm">No results found</Label>
-                    )}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            ) : (
-              <TableBody>
-                {results.map((player, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{player.name}</TableCell>
-                    <TableCell>{player.pdgaNumber}</TableCell>
-                    <TableCell>{player.rating}</TableCell>
-                    <TableCell>{player.class}</TableCell>
-                    <TableCell>{player.city}</TableCell>
-                    <TableCell>{player.state}</TableCell>
-                    <TableCell>{player.country}</TableCell>
-                    <TableCell>{player.membershipStatus}</TableCell>
+          {isLoading ? (
+            <div className="flex justify-center items-center">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Label>Please wait</Label>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="whitespace-nowrap">Name</TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      PDGA Number
+                    </TableHead>
+                    <TableHead className="whitespace-nowrap">Rating</TableHead>
+                    <TableHead className="whitespace-nowrap">Class</TableHead>
+                    <TableHead className="whitespace-nowrap">City</TableHead>
+                    <TableHead className="whitespace-nowrap">State</TableHead>
+                    <TableHead className="whitespace-nowrap">Country</TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      Membership Status
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            )}
-          </Table>
+                </TableHeader>
+                {results && results.length === 0 ? (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center pt-10">
+                        <Label className="text-sm">No results found</Label>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                ) : (
+                  <TableBody>
+                    {results.map((player, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="whitespace-nowrap">
+                          {player.name}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.pdgaNumber}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.rating}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.class}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.city}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.state}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.country}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.membershipStatus}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                )}
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
