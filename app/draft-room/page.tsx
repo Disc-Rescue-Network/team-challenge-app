@@ -266,7 +266,7 @@ const DraftRoom = () => {
     <div className="flex flex-col h-full">
       <div className="grid grid-cols-1 gap-4 justify-between p-4">
         <Label>Starting Pick:</Label>
-        <div className="flex flex-row gap-4 ">
+        <div className="flex flex-col lg:flex-row gap-4 ">
           <Button
             variant={draftOrder === "ourTeam" ? "outline" : "secondary"}
             onClick={() => handleToggleDraftOrder("ourTeam")}
