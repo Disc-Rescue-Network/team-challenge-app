@@ -28,6 +28,22 @@ import { Team } from "../interfaces/Team";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
 import { useDraft } from "../context/DraftContext";
+import {
+  Dialog,
+  DialogClose,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { DialogContent, DialogDescription } from "@radix-ui/react-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const MatchupPage = () => {
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
@@ -165,6 +181,19 @@ const MatchupPage = () => {
       });
     } finally {
       setIsAdding(false);
+      setManualPlayer({
+        name: "",
+        pdgaNumber: 0,
+        rating: 0,
+        class: "",
+        city: "",
+        state: "",
+        country: "",
+        membershipStatus: "",
+        active: true,
+        isEditing: false,
+        tempRating: 0,
+      });
     }
   };
 
@@ -445,102 +474,165 @@ const MatchupPage = () => {
     }
   };
 
+  const [sortedTeamPlayers, setSortedTeamPlayers] = useState<Player[]>([]);
+  const [sortedOpponentPlayers, setSortedOpponentPlayers] = useState<Player[]>(
+    []
+  );
+
+  // Initial sorting by rating DESC on first load
+  useEffect(() => {
+    if (team?.players) {
+      const sortedTeam = [...team.players].sort((a, b) => b.rating - a.rating);
+      setSortedTeamPlayers(sortedTeam);
+    }
+
+    if (selectedOpponent?.players) {
+      const sortedOpponent = [...selectedOpponent.players].sort(
+        (a, b) => b.rating - a.rating
+      );
+      setSortedOpponentPlayers(sortedOpponent);
+    }
+  }, [team, selectedOpponent]);
+
+  // Handle player selection to swap their positions
+  const handlePlayerSelect = (
+    selectedPdgaNumber: number,
+    isOpponent: boolean,
+    currentIndex: number
+  ) => {
+    if (isOpponent) {
+      const selectedPlayerIndex = sortedOpponentPlayers.findIndex(
+        (p) => p.pdgaNumber === selectedPdgaNumber
+      );
+      if (selectedPlayerIndex === -1) return;
+
+      const updatedOpponentPlayers = [...sortedOpponentPlayers];
+
+      // Swap positions of the selected player and the current player
+      [
+        updatedOpponentPlayers[currentIndex],
+        updatedOpponentPlayers[selectedPlayerIndex],
+      ] = [
+        updatedOpponentPlayers[selectedPlayerIndex],
+        updatedOpponentPlayers[currentIndex],
+      ];
+
+      setSortedOpponentPlayers(updatedOpponentPlayers);
+    } else {
+      const selectedPlayerIndex = sortedTeamPlayers.findIndex(
+        (p) => p.pdgaNumber === selectedPdgaNumber
+      );
+      if (selectedPlayerIndex === -1) return;
+
+      const updatedTeamPlayers = [...sortedTeamPlayers];
+
+      // Swap positions of the selected player and the current player
+      [
+        updatedTeamPlayers[currentIndex],
+        updatedTeamPlayers[selectedPlayerIndex],
+      ] = [
+        updatedTeamPlayers[selectedPlayerIndex],
+        updatedTeamPlayers[currentIndex],
+      ];
+
+      setSortedTeamPlayers(updatedTeamPlayers);
+    }
+  };
+
+  // Render matchups table rows
   const renderMatchups = () => {
-    const activePlayers = team.players.filter((player) => player.active);
-    const activeOpponentPlayers = (selectedOpponent?.players || []).filter(
+    // Filter out inactive players before rendering
+    const activeTeamPlayers = sortedTeamPlayers.filter(
+      (player) => player.active
+    );
+    const activeOpponentPlayers = sortedOpponentPlayers.filter(
       (player) => player.active
     );
 
-    const sortedTeamPlayers = activePlayers.sort((a, b) => b.rating - a.rating);
-    const sortedOpponentPlayers = activeOpponentPlayers.sort(
-      (a, b) => b.rating - a.rating
-    );
-
     const maxRows = Math.max(
-      sortedTeamPlayers.length,
-      sortedOpponentPlayers.length
+      activeTeamPlayers.length,
+      activeOpponentPlayers.length
     );
 
     return Array.from({ length: maxRows }).map((_, index) => {
-      const player = sortedTeamPlayers[index] || {};
-      const opponentPlayer = sortedOpponentPlayers[index] || {};
+      const player = activeTeamPlayers[index] || {};
+      const opponentPlayer = activeOpponentPlayers[index] || {};
+
       return (
         <TableRow key={index}>
-          <TableCell>{player.name || "N/A"}</TableCell>
+          <TableCell>
+            {" "}
+            <Button onClick={() => handleTogglePlayer(player, "myTeam")}>
+              Bench
+            </Button>
+          </TableCell>
+
+          <TableCell>
+            <Select
+              value={player.pdgaNumber?.toString() || ""}
+              onValueChange={(value) =>
+                handlePlayerSelect(Number(value), false, index)
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder={player.name || "Select Player"} />
+              </SelectTrigger>
+              <SelectContent>
+                {activeTeamPlayers.map((teamPlayer) => (
+                  <SelectItem
+                    key={teamPlayer.pdgaNumber}
+                    value={teamPlayer.pdgaNumber.toString()}
+                  >
+                    {teamPlayer.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </TableCell>
           <TableCell className="min-w-[100px]">
-            {player.isEditing ? (
-              <div className="flex flex-row gap-2">
-                <Input
-                  type="number"
-                  value={player.tempRating ?? player.rating ?? ""}
-                  onChange={(e) =>
-                    handleRatingChange(player, e.target.value, true)
-                  }
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="max-w-[200px]"
-                  onClick={() => handleSaveRating(player, true)}
-                >
-                  <Save size={16} />
-                </Button>
-              </div>
-            ) : (
-              <>
-                <span>{player.rating || 0}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="max-w-[200px]"
-                  onClick={() => handleEditRating(player, true)}
-                >
-                  <Pencil size={16} />
-                </Button>
-              </>
-            )}
+            <Input
+              type="number"
+              value={player.rating || ""}
+              onChange={(e) =>
+                handleRatingChange(player, e.target.value, false)
+              }
+            />
           </TableCell>
           <TableCell>vs.</TableCell>
           <TableCell className="min-w-[100px]">
-            {opponentPlayer.isEditing ? (
-              <div className="flex flex-row gap-2">
-                <Input
-                  type="number"
-                  value={
-                    opponentPlayer.tempRating ?? opponentPlayer.rating ?? ""
-                  }
-                  onChange={(e) =>
-                    handleRatingChange(opponentPlayer, e.target.value, false)
-                  }
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="max-w-[200px]"
-                  onClick={() => handleSaveRating(opponentPlayer, false)}
-                >
-                  <Save size={16} />
-                </Button>
-              </div>
-            ) : (
-              <>
-                <span>{opponentPlayer.rating || 0}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="max-w-[200px]"
-                  onClick={() => handleEditRating(opponentPlayer, false)}
-                >
-                  <Pencil size={16} />
-                </Button>
-              </>
-            )}
+            <Input
+              type="number"
+              value={opponentPlayer.rating || ""}
+              onChange={(e) =>
+                handleRatingChange(opponentPlayer, e.target.value, true)
+              }
+            />
           </TableCell>
-          <TableCell>{opponentPlayer.name || "N/A"}</TableCell>
-          <TableCell className="flex flex-col gap-4 ">
-            <Button onClick={() => handleTogglePlayer(player, "myTeam")}>
-              Bench {player.name}
-            </Button>
+          <TableCell>
+            <Select
+              value={opponentPlayer.pdgaNumber?.toString() || ""}
+              onValueChange={(value) =>
+                handlePlayerSelect(Number(value), true, index)
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue
+                  placeholder={opponentPlayer.name || "Select Opponent"}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {activeOpponentPlayers.map((opponentPlayer) => (
+                  <SelectItem
+                    key={opponentPlayer.pdgaNumber}
+                    value={opponentPlayer.pdgaNumber.toString()}
+                  >
+                    {opponentPlayer.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </TableCell>
+          <TableCell className="flex flex-col gap-4">
             {opponentPlayer && (
               <Button
                 onClick={() =>
@@ -548,7 +640,7 @@ const MatchupPage = () => {
                 }
                 variant="destructive"
               >
-                Bench {opponentPlayer?.name}
+                Bench
               </Button>
             )}
           </TableCell>
@@ -558,8 +650,10 @@ const MatchupPage = () => {
   };
 
   const renderInactivePlayers = () => {
-    const inactivePlayers = team.players.filter((player) => !player.active);
-    const inactiveOpponentPlayers = (selectedOpponent?.players || []).filter(
+    const inactivePlayers = sortedTeamPlayers.filter(
+      (player) => !player.active
+    );
+    const inactiveOpponentPlayers = sortedOpponentPlayers.filter(
       (player) => !player.active
     );
 
@@ -591,6 +685,7 @@ const MatchupPage = () => {
     if (isMobile) {
       return (
         <div className="flex flex-col">
+          {/* My Team Inactive Players */}
           <div className="flex flex-col">
             <h3 className="text-center font-bold">My Team</h3>
             <Table>
@@ -619,6 +714,8 @@ const MatchupPage = () => {
               </TableBody>
             </Table>
           </div>
+
+          {/* Opponent Team Inactive Players */}
           <div className="flex flex-col mt-4">
             <h3 className="text-center font-bold">Opponent Team</h3>
             <Table>
@@ -653,6 +750,7 @@ const MatchupPage = () => {
       );
     }
 
+    // Non-mobile view for inactive players
     return (
       <Table>
         <TableHeader>
@@ -686,7 +784,7 @@ const MatchupPage = () => {
                     <Button
                       className="max-w-[200px]"
                       onClick={() =>
-                        handleTogglePlayerStatus(opponentPlayer, true)
+                        handleTogglePlayerStatus(opponentPlayer, false)
                       }
                     >
                       Activate {opponentPlayer.name}
@@ -727,22 +825,21 @@ const MatchupPage = () => {
     }
   };
 
-  const handleTogglePlayer = (player: Player, teamType: string) => {
-    console.log("Toggling player:", player, teamType);
-    if (!player) return;
-
+  // Toggle player status between active and inactive
+  const handleTogglePlayer = (
+    player: Player,
+    teamType: "myTeam" | "opponentTeam"
+  ) => {
     if (teamType === "myTeam") {
-      const newTeam = { ...team };
-      newTeam.players = newTeam.players.map((p) =>
+      const updatedTeamPlayers = sortedTeamPlayers.map((p) =>
         p.pdgaNumber === player.pdgaNumber ? { ...p, active: !p.active } : p
       );
-      setTeam(newTeam);
-    } else if (selectedOpponent) {
-      const newOpponent = { ...selectedOpponent };
-      newOpponent.players = (newOpponent.players || []).map((p) =>
+      setSortedTeamPlayers(updatedTeamPlayers);
+    } else {
+      const updatedOpponentPlayers = sortedOpponentPlayers.map((p) =>
         p.pdgaNumber === player.pdgaNumber ? { ...p, active: !p.active } : p
       );
-      setSelectedOpponent(newOpponent);
+      setSortedOpponentPlayers(updatedOpponentPlayers);
     }
   };
 
@@ -784,6 +881,21 @@ const MatchupPage = () => {
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
   }, []);
+
+  const [manual, setManual] = useState(false);
+  const [manualPlayer, setManualPlayer] = useState<Player>({
+    name: "",
+    pdgaNumber: 0,
+    rating: 0,
+    class: "",
+    city: "",
+    state: "",
+    country: "",
+    membershipStatus: "",
+    active: true,
+    isEditing: false,
+    tempRating: 0,
+  });
 
   return (
     <div className="flex flex-1 flex-col h-3/5 gap-6 p-2 lg:p-4 lg:gap-6">
@@ -930,8 +1042,78 @@ const MatchupPage = () => {
 
           {selectedOpponent && (
             <Card className="">
-              <CardHeader>
+              <CardHeader className="relative">
                 <CardTitle>{selectedOpponent.name}</CardTitle>
+                <Dialog open={manual} onOpenChange={setManual}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="ml-auto max-w-[250px]">
+                      + Manually Add Player
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="p-2 flex flex-col gap-4">
+                    <DialogHeader>
+                      <DialogTitle>Confirm Player Details</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid grid-cols-1 gap-4 mt-4">
+                      <Label htmlFor="name">Name</Label>
+                      <Input
+                        type="text"
+                        name="name"
+                        value={manualPlayer.name}
+                        onChange={(e) =>
+                          setManualPlayer({
+                            ...manualPlayer,
+                            name: e.target.value,
+                          })
+                        }
+                        placeholder="Enter player's name"
+                      />
+                      <Label htmlFor="pdga">PDGA Number</Label>
+                      <Input
+                        type="number"
+                        name="pdga"
+                        value={manualPlayer.pdgaNumber}
+                        onChange={(e) =>
+                          setManualPlayer({
+                            ...manualPlayer,
+                            pdgaNumber: parseInt(e.target.value, 10),
+                          })
+                        }
+                        placeholder="Enter player's PDGA number"
+                      />
+                      <Label htmlFor="rating">Rating</Label>
+
+                      <Input
+                        type="number"
+                        name="rating"
+                        value={manualPlayer.rating}
+                        onChange={(e) =>
+                          setManualPlayer({
+                            ...manualPlayer,
+                            rating: parseInt(e.target.value, 10),
+                          })
+                        }
+                        placeholder="Enter player's rating"
+                      />
+                    </div>
+                    <DialogFooter>
+                      <DialogClose>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button
+                        onClick={() => handleAddPlayer(manualPlayer, false)}
+                      >
+                        Add to Team
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => handleAddPlayer(manualPlayer, true)}
+                      >
+                        Add to Opponent
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -1034,7 +1216,7 @@ const MatchupPage = () => {
                         <TableRow>
                           <TableCell colSpan={9} className="text-center pt-10">
                             {isSearching ? (
-                              <Loader2 size="32" />
+                              <Loader2 size="32" className="animate-spin" />
                             ) : (
                               <Label className="text-sm">
                                 No results found

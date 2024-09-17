@@ -390,7 +390,7 @@ const RosterPage = () => {
                   <TableRow>
                     <TableCell colSpan={9} className="text-center pt-10">
                       {isSearching ? (
-                        <Loader2 size="32" className="mx-auto" />
+                        <Loader2 size="32" className="mx-auto animate-spin" />
                       ) : (
                         <Label className="text-sm">No results found</Label>
                       )}

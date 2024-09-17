@@ -36,7 +36,6 @@ export async function POST(req: NextRequest) {
     const playerExists = team.players.some(
       (p) => p.pdgaNumber === player.pdgaNumber
     );
-
     if (playerExists) {
       return NextResponse.json(
         { message: "Player already exists on the team", team },
