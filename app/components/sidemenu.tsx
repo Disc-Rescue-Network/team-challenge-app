@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Calendar,
   CalendarCheck2,
   CalendarPlus,
   CalendarSearch,
@@ -94,6 +95,19 @@ function SideMenu() {
             </Button>
             <Button
               asChild
+              variant={pathname === "/schedule" ? "secondary" : "ghost"}
+              className="w-full justify-start flex gap-2 my-1"
+            >
+              <Link
+                href="/schedule"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <Calendar className="h-4 w-4" />
+                Schedule
+              </Link>
+            </Button>
+            <Button
+              asChild
               variant={pathname === "/check-in" ? "secondary" : "ghost"}
               className="w-full justify-start flex gap-2 my-1"
             >
@@ -107,7 +121,7 @@ function SideMenu() {
             </Button>
             <Button
               asChild
-              variant={pathname === "/my-rounds" ? "secondary" : "ghost"}
+              variant={pathname === "/matchup" ? "secondary" : "ghost"}
               className="w-full justify-start flex gap-2 my-1"
             >
               <Link

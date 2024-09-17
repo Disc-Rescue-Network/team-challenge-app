@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/card";
 import { Loader2, Pencil, Save } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { Player } from "../interfaces/Player";
 import { Team } from "../interfaces/Team";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
@@ -44,6 +43,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Player } from "../interfaces/Player";
 
 const MatchupPage = () => {
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
