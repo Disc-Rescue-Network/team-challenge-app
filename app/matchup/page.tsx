@@ -589,7 +589,7 @@ const MatchupPage = () => {
               </SelectContent>
             </Select>
           </TableCell>
-          <TableCell className="min-w-[100px]">
+          {/* <TableCell className="min-w-[100px]">
             <Input
               type="number"
               value={player.rating || ""}
@@ -597,9 +597,42 @@ const MatchupPage = () => {
                 handleRatingChange(player, e.target.value, false)
               }
             />
+          </TableCell> */}
+          <TableCell className="min-w-[100px]">
+            {player.isEditing ? (
+              <div className="flex flex-row gap-2">
+                <Input
+                  type="number"
+                  value={player.tempRating ?? player.rating ?? ""}
+                  onChange={(e) =>
+                    handleRatingChange(player, e.target.value, true)
+                  }
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="max-w-[200px]"
+                  onClick={() => handleSaveRating(player, true)}
+                >
+                  <Save size={16} />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <span>{player.rating || 0}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="max-w-[200px]"
+                  onClick={() => handleEditRating(player, true)}
+                >
+                  <Pencil size={16} />
+                </Button>
+              </>
+            )}
           </TableCell>
           <TableCell>vs.</TableCell>
-          <TableCell className="min-w-[100px]">
+          {/* <TableCell className="min-w-[100px]">
             <Input
               type="number"
               value={opponentPlayer.rating || ""}
@@ -607,6 +640,41 @@ const MatchupPage = () => {
                 handleRatingChange(opponentPlayer, e.target.value, true)
               }
             />
+          </TableCell> */}
+          <TableCell className="min-w-[100px]">
+            {opponentPlayer.isEditing ? (
+              <div className="flex flex-row gap-2">
+                <Input
+                  type="number"
+                  value={
+                    opponentPlayer.tempRating ?? opponentPlayer.rating ?? ""
+                  }
+                  onChange={(e) =>
+                    handleRatingChange(opponentPlayer, e.target.value, false)
+                  }
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="max-w-[200px]"
+                  onClick={() => handleSaveRating(opponentPlayer, false)}
+                >
+                  <Save size={16} />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <span>{opponentPlayer.rating || 0}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="max-w-[200px]"
+                  onClick={() => handleEditRating(opponentPlayer, false)}
+                >
+                  <Pencil size={16} />
+                </Button>
+              </>
+            )}
           </TableCell>
           <TableCell>
             <Select
@@ -835,18 +903,37 @@ const MatchupPage = () => {
         p.pdgaNumber === player.pdgaNumber ? { ...p, active: !p.active } : p
       );
       setSortedTeamPlayers(updatedTeamPlayers);
+      saveTeam({ ...team, players: updatedTeamPlayers }, true);
     } else {
       const updatedOpponentPlayers = sortedOpponentPlayers.map((p) =>
         p.pdgaNumber === player.pdgaNumber ? { ...p, active: !p.active } : p
       );
       setSortedOpponentPlayers(updatedOpponentPlayers);
+      saveTeam(
+        {
+          ...selectedOpponent,
+          players: updatedOpponentPlayers,
+          name: selectedOpponent?.name || "",
+        },
+        false
+      );
     }
   };
 
   const goToDraftRoom = () => {
     if (team && selectedOpponent) {
-      setTeamDraft(team); // Assuming `team` is your state variable
-      setSelectedOpponentDraft(selectedOpponent); // Assuming `selectedOpponent` is your state variable
+      setTeamDraft({
+        ...team,
+        players: team.players.filter((player) => player.active),
+      });
+      // only active players
+      if (selectedOpponent) {
+        setSelectedOpponentDraft({
+          ...selectedOpponent,
+          players: selectedOpponent.players.filter((player) => player.active),
+          name: selectedOpponent.name || "",
+        });
+      }
       router.push("/draft-room");
     } else {
       console.error(
