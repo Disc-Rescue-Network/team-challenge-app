@@ -21,6 +21,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Pagination } from "./pagination";
 
 function PlayerSearch() {
   const [name, setName] = useState("");
@@ -28,6 +29,11 @@ function PlayerSearch() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [isMobile, setIsMobile] = useState(false);
+  const [paginationConfig, setPaginationConfig] = useState({
+    pageIndex: 0,
+    perPage: "10",
+    totalCount: 0,
+  });
 
   useEffect(() => {
     const handleResize = () => {
@@ -39,17 +45,30 @@ function PlayerSearch() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+ 
+
+  const  handlePagination = (pageIndex: number)=> {
+    setPaginationConfig((previous) => ({ ...previous, pageIndex }));
+  }
+
+  const paginatedResults = paginateArray(results, paginationConfig.pageIndex, paginationConfig.perPage);
 
   const handleSearch = async () => {
+    //TODO: remove this on production
+    const firstName = "Chris", lastName = "Johnson", pdgaNumber = "123456", city = "Chicago", state = "IL", country = "United States"
+    setResults(generateMockData());
+    setPaginationConfig(previous => ({ ...previous, totalCount: 30 }));
+    return;
+    //---
     try {
       setIsLoading(true);
-      const [firstName, lastName] = name.split(" ");
+      
       const response = await fetch("/api/search", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ firstName, lastName: lastName || "" }),
+        body: JSON.stringify({ firstName, lastName,pdgaNumber, city, state, country}),
       });
       const data = await response.json();
       if (data.error) {
@@ -62,8 +81,9 @@ function PlayerSearch() {
 
       }else{
         setResults(data.players || []);
+        setPaginationConfig(previous => ({ ...previous, totalCount: data.players.length }));
       }
-        
+
     } catch (error) {
       console.error(`Error fetching data: ${error}`);
       setResults([]);
@@ -145,7 +165,7 @@ function PlayerSearch() {
                   </TableBody>
                 ) : (
                   <TableBody>
-                    {results.map((player, index) => (
+                    {paginatedResults.map((player, index) => (
                       <TableRow key={index}>
                         <TableCell className="whitespace-nowrap">
                           {player.name}
@@ -180,8 +200,43 @@ function PlayerSearch() {
           )}
         </CardContent>
       </Card>
+      <Pagination
+                onPageChange={handlePagination}
+                perPage={parseInt(paginationConfig.perPage)}
+                pageIndex={paginationConfig.pageIndex!}
+                totalCount={paginationConfig.totalCount}
+              />
     </div>
   );
 }
+// -- to paginate the results array with the players
+function paginateArray<T>(
+  array: T[],
+  pageIndex: number,
+  perPage: string | number
+): T[] {
+  const itemsPerPage =
+    typeof perPage === "string" ? parseInt(perPage) : perPage;
+  const startIndex = pageIndex * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return array.slice(startIndex, endIndex);
+}
 
+//TODO: remove this on production
+function generateMockData() {
+  const mockData = [];
+  for (let i = 0; i < 30; i++) {
+    mockData.push({
+      name: "Chris Deck",
+      pdgaNumber: 188489 + i,
+      rating: Math.floor(Math.random() * (1000 - 800) + 800),
+      class: Math.random() > 0.5 ? "Am" : "Pro",
+      city: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"][Math.floor(Math.random() * 5)],
+      state: ["New York", "California", "Illinois", "Texas", "Arizona"][Math.floor(Math.random() * 5)],
+      country: "United States",
+      membershipStatus: Math.random() > 0.3 ? "Current (through 31-Dec-2024)" : "Expired"
+    });
+  }
+  return mockData;
+}
 export default PlayerSearch;
