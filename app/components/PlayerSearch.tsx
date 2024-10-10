@@ -52,7 +52,18 @@ function PlayerSearch() {
         body: JSON.stringify({ firstName, lastName: lastName || "" }),
       });
       const data = await response.json();
-      setResults(data.players || []);
+      if (data.error) {
+        toast({
+          title: "Error",
+          description: `${data.error}`,
+          variant: "destructive",
+          duration: 3000,
+        });
+
+      }else{
+        setResults(data.players || []);
+      }
+        
     } catch (error) {
       console.error(`Error fetching data: ${error}`);
       setResults([]);
