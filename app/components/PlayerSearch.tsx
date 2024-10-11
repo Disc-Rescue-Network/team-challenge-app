@@ -32,7 +32,7 @@ import {IState, State} from "country-state-city";
 import { Pagination } from "./pagination";
 
 type InputVisibility = {
-  firstName: boolean;
+  //firstName: boolean;
   lastName: boolean;
   pdgaNumber: boolean;
   city: boolean;
@@ -54,7 +54,7 @@ function PlayerSearch() {
   const [isMobile, setIsMobile] = useState(false);
   const [inputVisibility, setInputVisibility] = useState<InputVisibility>(
     {
-      firstName: true,
+      //firstName: true, -- at least first name is required
       lastName: true,
       pdgaNumber: true,
       city: true,
@@ -93,11 +93,12 @@ function PlayerSearch() {
 
   const handleSearch = async () => {
     //TODO: remove this on production
-    const firstName = "Chris", lastName = "Johnson", pdgaNumber = "123456", city = "Chicago", state = "IL", country = "United States"
-    setResults(generateMockData());
-    setPaginationConfig(previous => ({ ...previous, totalCount: 30 }));
-    return;
+    // const firstName = "Chris", lastName = "Johnson", pdgaNumber = "123456", city = "Chicago", state = "IL", country = "United States"
+    // setResults(generateMockData());
+    // setPaginationConfig(previous => ({ ...previous, totalCount: 30 }));
+    // return;
     //---
+    console.log("--->",firstName, lastName, pdgaNumber, city, selectedState, country);
     try {
       setIsLoading(true);
       
@@ -177,7 +178,7 @@ function PlayerSearch() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
-            {inputVisibility.firstName && (
+            {/* {inputVisibility.firstName && ( */}
               <div className="w-full">
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
@@ -188,7 +189,7 @@ function PlayerSearch() {
                   placeholder="Enter first name"
                 />
               </div>
-            )}
+            {/* )} */}
             {inputVisibility.lastName && (
               <div className="w-full">
                 <Label htmlFor="lastName">Last Name</Label>
