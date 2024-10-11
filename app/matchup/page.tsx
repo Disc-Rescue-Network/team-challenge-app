@@ -984,6 +984,35 @@ const MatchupPage = () => {
     tempRating: 0,
   });
 
+  // Function to calculate the average rating of a team
+  const calculateTeamAvg = (team: Team) => {
+    if (!team || !team.players || team.players.length === 0) {
+      console.log("No players in team");
+      return 0;
+    }
+
+    const validPlayers = team.players.filter((player) => player.rating > 0);
+
+    if (validPlayers.length === 0) {
+      console.log("No valid players in team");
+      return 0;
+    }
+
+    const totalRating = validPlayers.reduce(
+      (sum, player) => sum + player.rating,
+      0
+    );
+
+    return Math.round(totalRating / validPlayers.length);
+  };
+
+  // Function to calculate the average rating difference (Teebird perspective)
+  const calculateDifference = (team: Team, opponentTeam: Team) => {
+    const teamAvg = calculateTeamAvg(team);
+    const opponentAvg = calculateTeamAvg(opponentTeam);
+    return teamAvg - opponentAvg;
+  };
+
   return (
     <div className="flex flex-1 flex-col h-3/5 gap-6 p-2 lg:p-4 lg:gap-6">
       <Tabs defaultValue="teamBuilder" className="w-full">
@@ -1353,6 +1382,43 @@ const MatchupPage = () => {
           <Card className="">
             <CardHeader className="grid grid-cols-1 gap-4">
               <CardTitle>Matchup Viewer</CardTitle>
+              {team && selectedOpponent && (
+                <div className="grid grid-cols-3 gap-4 bg-muted p-4 rounded-lg">
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-muted-foreground mb-1">
+                      Teebird Average
+                    </div>
+                    <div className="text-2xl font-bold">
+                      {calculateTeamAvg(team)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-muted-foreground mb-1">
+                      Opponent Average
+                    </div>
+                    <div className="text-2xl font-bold">
+                      {calculateTeamAvg(selectedOpponent)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-muted-foreground mb-1">
+                      Difference
+                    </div>
+                    <div
+                      className={`text-2xl font-bold ${
+                        calculateDifference(team, selectedOpponent) >= 0
+                          ? "text-green-500"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {calculateDifference(team, selectedOpponent) > 0
+                        ? "+"
+                        : ""}
+                      {calculateDifference(team, selectedOpponent)}
+                    </div>
+                  </div>
+                </div>
+              )}
               {selectedOpponent && (
                 <CardDescription>
                   <Button variant="secondary" onClick={goToDraftRoom}>
@@ -1373,6 +1439,7 @@ const MatchupPage = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Actions</TableHead>
                         <TableHead>Teebird</TableHead>
                         <TableHead>Rating</TableHead>
                         <TableHead>-</TableHead>
