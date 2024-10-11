@@ -34,7 +34,7 @@ export default function RootLayout({
             <SideMenu />
             <div className="w-full">
               <MenuHeader />
-              <main className="grid grid-cols-1 min-h-screen p-2 lg:p-4 gap-4">
+              <main className="grid grid-cols-1 min-h-screen p-2 lg:p-2 gap-4">
                 <DraftProvider>{children}</DraftProvider>
               </main>
             </div>
