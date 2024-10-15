@@ -35,7 +35,7 @@ const RosterPage = () => {
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [isRemoving, setIsRemoving] = useState<boolean>(false);
-  const [isMyTeam, setIsMyTeam] = useState<boolean>(true);
+  const [isMyTeam, setIsMyTeam] = useState<boolean>(false);
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -60,7 +60,7 @@ const RosterPage = () => {
 
   useEffect(() => {
     // Fetch the existing team data when the component mounts
-    fetchTeamData();
+   // fetchTeamData();
   }, []);
 
   const fetchTeamData = async () => {
@@ -158,20 +158,31 @@ const RosterPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ teamData, isMyTeam }), // Include isMyTeam in the request body
+        body: JSON.stringify({ teamData}), 
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to save team");
+      
+            
+      if (response.status === 200) {
+        
+        toast({
+          title: "Success",
+          description: `Team ${teamData.name} saved successfully`,
+          variant: "default",
+          duration: 3000,
+        });
       }
 
-      toast({
-        title: "Success",
-        description: "Team saved successfully",
-        variant: "default",
-        duration: 3000,
-      });
-      fetchTeamData(); // Refresh the team data
+      if(response.status === 400) {  
+          const errorMessage= await response.json();     
+          toast({
+          title: "Error",
+          description: errorMessage.error,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    
+      //fetchTeamData(); // Refresh the team data
       setIsLoading(false);
     } catch (error) {
       console.error(`Error saving team: ${error}`);
@@ -330,7 +341,18 @@ const RosterPage = () => {
             />
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
-            <Button onClick={handleSaveTeam}>Save Team</Button>
+            <Button onClick={handleSaveTeam}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Label>Please wait</Label>
+              </>
+            ) : (
+              "Save Team"
+            )}          
+                
+            
+            </Button>
           </CardFooter>
         </Card>
       )}
