@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { list } from "@vercel/blob";
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const myTeam = searchParams.get("myTeam");
+
+  
+  if (!myTeam) {
+    return NextResponse.json({ error: "No team provided.You must set your team to get opponent teams." },{status: 400});
+  }
+
   try {
     // List the blobs to find all opponent team files
     const { blobs } = await list();
-    const opponentBlobs = blobs.filter((blob) =>
-      blob.pathname.startsWith("opponent_")
-    );
+    const opponentBlobs = blobs.filter((blob) => {
+      const teamName = blob.pathname.split('.')[0];
+      return teamName !== myTeam;
+    });
 
+    
     if (opponentBlobs.length === 0) {
       return NextResponse.json({ message: "No opponent teams found" });
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import {Button} from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,8 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -50,11 +50,9 @@ function PlayerSearch() {
   const [country] = useState("US");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const [isMobile, setIsMobile] = useState(false);
   const [inputVisibility, setInputVisibility] = useState<InputVisibility>(
     {
-      //firstName: true, -- at least first name is required
+      //firstName: true,
       lastName: true,
       pdgaNumber: true,
       city: true,
@@ -74,6 +72,13 @@ function PlayerSearch() {
   }, []);
 
   useEffect(() => {
+    const fetchedStates = State.getStatesOfCountry("US");
+    setStates(fetchedStates);
+  }, []);
+
+ const [isMobile, setIsMobile] = useState(false);
+  
+ useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1080);
     };
@@ -107,7 +112,15 @@ function PlayerSearch() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ firstName, lastName,pdgaNumber, city, state:selectedState, country}),
+        
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          pdgaNumber,
+          city,
+          state: selectedState,
+          country,
+        }),
       });
       const data = await response.json();
       if (data.error) {
@@ -139,7 +152,7 @@ function PlayerSearch() {
 
   return (
     <div className="flex flex-1 flex-col p-3 lg:p-0 gap-8 max-w-[1300px]">
-       <Card>
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Player Search</CardTitle>
           <DropdownMenu>
