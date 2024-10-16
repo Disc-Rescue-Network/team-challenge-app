@@ -29,49 +29,22 @@ import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import { DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const mockData = [
-  {id: 1, label: "Option 1"},
-  {id: 2, label: "Option 2"},
-  {id: 3, label: "Option 3"},
-  {id: 4, label: "Option 4"},
-  {id: 5, label: "Option 5"},
-  {id: 6, label: "Option 6"},
-  {id: 7, label: "Option 7"},
-  {id: 8, label: "Option 8"},
-  {id: 9, label: "Option 9"},
-  {id: 10, label: "Option 10"},
-  {id: 11, label: "Option 11"},
-  {id: 12, label: "Option 12"},
-  {id: 13, label: "Option 13"},
-  {id: 14, label: "Option 14"},
-  {id: 15, label: "Option 15"},
-  {id: 16, label: "Option 16"},
-  {id: 17, label: "Option 17"},
-  {id: 18, label: "Option 18"},
-  {id: 19, label: "Option 19"},
-  {id: 20, label: "Option 20"},
-  {id: 21, label: "Option 21"},
-  {id: 22, label: "Option 22"},
-  {id: 23, label: "Option 23"},
-  {id: 24, label: "Option 24"},
-  {id: 25, label: "Option 25"},
-  {id: 26, label: "Option 26"},
-  {id: 27, label: "Option 27"},
-
-];
 
 const RosterPage = () => {
   const [hasTeam, setHasTeam] = useState<boolean>(false);
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
+  const [teams, setTeams] = useState<Team[]>([]);
   const [name, setName] = useState<string>("");
   const [results, setResults] = useState<Player[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [isRemoving, setIsRemoving] = useState<boolean>(false);
-  const [isMyTeam, setIsMyTeam] = useState<boolean>(true);
-  const [options, setOptions] = useState<{id: number; label: string}[]>([]);
+  const [isMyTeam, setIsMyTeam] = useState<boolean>(true);  
   const [activeTab, setActiveTab] = useState<string>("team");
+  const [teamNames, setTeamNames] = useState<string[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -100,11 +73,8 @@ const RosterPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchOptions = async () => {
-      setOptions(mockData); 
-    };
-
-    fetchOptions();
+    //TODO- get myTeam from cookie and put this fetchOpponentTeams() as a service
+    fetchOpponentTeams()
   }, []);
 
   const fetchTeamData = async () => {
@@ -123,6 +93,42 @@ const RosterPage = () => {
     setIsLoading(false);
   };
 
+  const fetchOpponentTeams = async () => {
+    //TODO- get team from cookie
+    const myTeam = 'Team one';
+    //---
+    console.log("passed myTeam", myTeam);
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/getOpponentTeams/?myTeam=${encodeURIComponent(myTeam)}`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+
+      if(response.status === 200){
+        const extractedTeamNames = extractTeamNames(data).sort((a, b) => a.localeCompare(b));
+        setTeamNames(extractedTeamNames);
+        setTeams(data);
+      } 
+
+      if(response.status === 400) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+      
+      
+    } catch (error) {
+      console.error("Error fetching opponent teams:", error);
+    }
+    setIsLoading(false);
+  };
   const handleSearch = async () => {
     setIsSearching(true);
     const [firstName, lastName] = name.split(" ");
@@ -297,6 +303,13 @@ const RosterPage = () => {
     };
   }, []);
 
+  const handleTeamSelect = (teamName: string) => {
+    setSelectedTeam(teamName);
+    const selectedTeam = teams.find(team => team.name === teamName);
+    if (selectedTeam) {
+      setTeam(selectedTeam);
+    }
+  };
   return (
     <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
     <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -322,9 +335,10 @@ const RosterPage = () => {
                 align="end"
                 className="custom-dropdown-content overflow-y-auto max-h-[250px]"
               >
-                {options.map((option) => (
-                  <DropdownMenuCheckboxItem key={option.id}>
-                    {option.label}
+                {teamNames.map((teamName) => (
+                  <DropdownMenuCheckboxItem key={teamName} checked={selectedTeam === teamName}
+                  onCheckedChange={() => handleTeamSelect(teamName)}>
+                    {teamName}
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
@@ -548,5 +562,7 @@ const RosterPage = () => {
   </div>
 );
 };
-
+function extractTeamNames(teams: Array<{ name: string; players: Player[] }>): string[] {
+  return teams.map(team => team.name);
+}
 export default RosterPage;
