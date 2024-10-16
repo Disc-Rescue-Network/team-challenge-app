@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import {Button} from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,8 +8,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -18,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+<<<<<<< HEAD
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -33,6 +41,16 @@ import { Pagination } from "./pagination";
 
 type InputVisibility = {
   //firstName: boolean;
+=======
+import {toast} from "@/components/ui/use-toast";
+import {ChevronDown, Loader2} from "lucide-react";
+import {useEffect, useState} from "react";
+import {IState, State} from "country-state-city";
+import React from "react";
+
+type InputVisibility = {
+  firstName: boolean;
+>>>>>>> origin/DRN-1241
   lastName: boolean;
   pdgaNumber: boolean;
   city: boolean;
@@ -50,11 +68,17 @@ function PlayerSearch() {
   const [country] = useState("US");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+<<<<<<< HEAD
 
   const [isMobile, setIsMobile] = useState(false);
   const [inputVisibility, setInputVisibility] = useState<InputVisibility>(
     {
       //firstName: true, -- at least first name is required
+=======
+  const [inputVisibility, setInputVisibility] = React.useState<InputVisibility>(
+    {
+      firstName: true,
+>>>>>>> origin/DRN-1241
       lastName: true,
       pdgaNumber: true,
       city: true,
@@ -62,6 +86,7 @@ function PlayerSearch() {
       country: true,
     }
   );
+<<<<<<< HEAD
   const [paginationConfig, setPaginationConfig] = useState({
     pageIndex: 0,
     perPage: "10",
@@ -72,8 +97,17 @@ function PlayerSearch() {
     const fetchedStates = State.getStatesOfCountry("US");
     setStates(fetchedStates);
   }, []);
+=======
+>>>>>>> origin/DRN-1241
 
   useEffect(() => {
+    const fetchedStates = State.getStatesOfCountry("US");
+    setStates(fetchedStates);
+  }, []);
+
+ const [isMobile, setIsMobile] = useState(false);
+  
+ useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1080);
     };
@@ -101,13 +135,27 @@ function PlayerSearch() {
     console.log("--->",firstName, lastName, pdgaNumber, city, selectedState, country);
     try {
       setIsLoading(true);
+<<<<<<< HEAD
       
+=======
+>>>>>>> origin/DRN-1241
       const response = await fetch("/api/search", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+<<<<<<< HEAD
         body: JSON.stringify({ firstName, lastName,pdgaNumber, city, state:selectedState, country}),
+=======
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          pdgaNumber,
+          city,
+          state: selectedState,
+          country,
+        }),
+>>>>>>> origin/DRN-1241
       });
       const data = await response.json();
       if (data.error) {
@@ -139,7 +187,11 @@ function PlayerSearch() {
 
   return (
     <div className="flex flex-1 flex-col p-3 lg:p-0 gap-8 max-w-[1300px]">
+<<<<<<< HEAD
        <Card>
+=======
+      <Card>
+>>>>>>> origin/DRN-1241
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Player Search</CardTitle>
           <DropdownMenu>
@@ -178,7 +230,11 @@ function PlayerSearch() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
+<<<<<<< HEAD
             {/* {inputVisibility.firstName && ( */}
+=======
+            {inputVisibility.firstName && (
+>>>>>>> origin/DRN-1241
               <div className="w-full">
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
@@ -189,7 +245,11 @@ function PlayerSearch() {
                   placeholder="Enter first name"
                 />
               </div>
+<<<<<<< HEAD
             {/* )} */}
+=======
+            )}
+>>>>>>> origin/DRN-1241
             {inputVisibility.lastName && (
               <div className="w-full">
                 <Label htmlFor="lastName">Last Name</Label>
