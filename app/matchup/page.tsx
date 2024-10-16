@@ -92,11 +92,32 @@ const MatchupPage = () => {
   };
 
   const fetchOpponentTeams = async () => {
+    //TODO- get team from cookie
+    const myTeam = 'Team one';
+    //---
+    console.log("passed myTeam", myTeam);
     setIsLoading(true);
     try {
-      const response = await fetch("/api/getOpponentTeams");
+      const response = await fetch(`/api/getOpponentTeams/?myTeam=${encodeURIComponent(myTeam)}`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       const data = await response.json();
-      setOpponents(data);
+
+      if(response.status === 200) setOpponents(data);
+
+      if(response.status === 400) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+      
+      
     } catch (error) {
       console.error("Error fetching opponent teams:", error);
     }
