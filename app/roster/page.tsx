@@ -69,13 +69,9 @@ const RosterPage = () => {
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [isRemoving, setIsRemoving] = useState<boolean>(false);
-<<<<<<< HEAD
-  const [isMyTeam, setIsMyTeam] = useState<boolean>(false);
-=======
   const [isMyTeam, setIsMyTeam] = useState<boolean>(true);
   const [options, setOptions] = useState<{id: number; label: string}[]>([]);
   const [activeTab, setActiveTab] = useState<string>("team");
->>>>>>> origin/DRN-1241
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -303,204 +299,75 @@ const RosterPage = () => {
 
   return (
     <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 m-auto justify-center w-90 max-w-[400px] mb-[10px]">
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="createTeam">Create Team</TabsTrigger>
-          <TabsTrigger value="playerSearch">Player Search</TabsTrigger>
-        </TabsList>
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <TabsList className="grid grid-cols-3 m-auto justify-center w-90 max-w-[400px] mb-[10px]">
+        <TabsTrigger value="team">Team</TabsTrigger>
+        <TabsTrigger value="createTeam">Create Team</TabsTrigger>
+        <TabsTrigger value="playerSearch">Player Search</TabsTrigger>
+      </TabsList>
 
-        <TabsContent value="team" className="mb-4">
-          <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg md:text-2xl lg:text-2xl">
-                {team.name}
-              </CardTitle>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="px-2 gap-1 !mt-0">
-                    Teams <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="custom-dropdown-content overflow-y-auto max-h-[250px]"
-                >
-                  {options.map((option) => (
-                    <DropdownMenuCheckboxItem key={option.id}>
-                      {option.label}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex justify-center items-center">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  <Label>Please wait</Label>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="whitespace-nowrap">
-                          Name
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap">
-                          Rating
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap">
-                          PDGA Number
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    {team.players.length === 0 ? (
-                      <TableBody>
-                        <TableRow>
-                          <TableCell colSpan={4} className="text-center pt-10">
-                            <Label className="text-sm">
-                              No players on team
-                            </Label>
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    ) : (
-                      <TableBody>
-                        {team.players.map((player, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="whitespace-nowrap">
-                              {player.name}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              {player.rating}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              {player.pdgaNumber}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                onClick={() => handleRemovePlayer(player)}
-                                disabled={isRemoving}
-                                variant="destructive"
-                                className="whitespace-nowrap"
-                              >
-                                {isRemoving ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  "Remove"
-                                )}
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    )}
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="createTeam">
-          <Card className="w-full mb-4">
-            <CardHeader>
-              <CardTitle>Create Team</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Input
-                type="text"
-                value={team.name}
-                onChange={(e) => setTeam({...team, name: e.target.value})}
-                placeholder="Enter team name"
-              />
-            </CardContent>
-            <CardFooter className="border-t px-6 py-4">
-              <Button onClick={handleSaveTeam}>Save Team</Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="playerSearch">
-          <Card className="w-full mb-4">
-            <CardHeader>
-              <CardTitle>Player Search</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter player's name"
-              />
-            </CardContent>
-            <CardFooter className="border-t px-6 py-4">
-              <Button onClick={handleSearch}>
-                {isSearching ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    <Label>Please wait</Label>
-                  </>
-                ) : (
-                  "Search"
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Search Results</CardTitle>
-            </CardHeader>
-            <CardContent>
+      <TabsContent value="team" className="mb-4">
+        <Card className="w-full">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg md:text-2xl lg:text-2xl">
+              {team.name}
+            </CardTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="px-2 gap-1 !mt-0">
+                  Teams <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="custom-dropdown-content overflow-y-auto max-h-[250px]"
+              >
+                {options.map((option) => (
+                  <DropdownMenuCheckboxItem key={option.id}>
+                    {option.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center items-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Label>Please wait</Label>
+              </div>
+            ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="whitespace-nowrap">Name</TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Name
+                      </TableHead>
                       <TableHead className="whitespace-nowrap">
                         Rating
                       </TableHead>
                       <TableHead className="whitespace-nowrap">
                         PDGA Number
                       </TableHead>
-                      <TableHead className="whitespace-nowrap">Class</TableHead>
-                      <TableHead className="whitespace-nowrap">City</TableHead>
-                      <TableHead className="whitespace-nowrap">State</TableHead>
                       <TableHead className="whitespace-nowrap">
-                        Country
-                      </TableHead>
-                      <TableHead className="whitespace-nowrap">
-                        Membership Status
-                      </TableHead>
-                      <TableHead className="whitespace-nowrap">
-                        Action
+                        Actions
                       </TableHead>
                     </TableRow>
                   </TableHeader>
-                  {results.length === 0 ? (
+                  {team.players.length === 0 ? (
                     <TableBody>
                       <TableRow>
-                        <TableCell colSpan={9} className="text-center pt-10">
-                          {isSearching ? (
-                            <Loader2
-                              size="32"
-                              className="mx-auto animate-spin"
-                            />
-                          ) : (
-                            <Label className="text-sm">No results found</Label>
-                          )}
+                        <TableCell colSpan={4} className="text-center pt-10">
+                          <Label className="text-sm">
+                            No players on team
+                          </Label>
                         </TableCell>
                       </TableRow>
                     </TableBody>
                   ) : (
                     <TableBody>
-                      {results.map((player, index) => (
+                      {team.players.map((player, index) => (
                         <TableRow key={index}>
                           <TableCell className="whitespace-nowrap">
                             {player.name}
@@ -511,31 +378,17 @@ const RosterPage = () => {
                           <TableCell className="whitespace-nowrap">
                             {player.pdgaNumber}
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {player.class}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {player.city}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {player.state}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {player.country}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {player.membershipStatus}
-                          </TableCell>
                           <TableCell>
                             <Button
-                              onClick={() => handleAddPlayer(player)}
-                              disabled={isAdding}
+                              onClick={() => handleRemovePlayer(player)}
+                              disabled={isRemoving}
+                              variant="destructive"
                               className="whitespace-nowrap"
                             >
-                              {isAdding ? (
+                              {isRemoving ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                "Select"
+                                "Remove"
                               )}
                             </Button>
                           </TableCell>
@@ -545,12 +398,13 @@ const RosterPage = () => {
                   )}
                 </Table>
               </div>
-<<<<<<< HEAD
             )}
           </CardContent>
         </Card>
-      ) : (
-        <Card className="w-full">
+      </TabsContent>
+
+      <TabsContent value="createTeam">
+        <Card className="w-full mb-4">
           <CardHeader>
             <CardTitle>Create Team</CardTitle>
           </CardHeader>
@@ -558,146 +412,141 @@ const RosterPage = () => {
             <Input
               type="text"
               value={team.name}
-              onChange={(e) => setTeam({ ...team, name: e.target.value })}
+              onChange={(e) => setTeam({...team, name: e.target.value})}
               placeholder="Enter team name"
             />
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
-            <Button onClick={handleSaveTeam}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                <Label>Please wait</Label>
-              </>
-            ) : (
-              "Save Team"
-            )}          
-                
-            
+            <Button onClick={handleSaveTeam}>Save Team</Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="playerSearch">
+        <Card className="w-full mb-4">
+          <CardHeader>
+            <CardTitle>Player Search</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter player's name"
+            />
+          </CardContent>
+          <CardFooter className="border-t px-6 py-4">
+            <Button onClick={handleSearch}>
+              {isSearching ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Label>Please wait</Label>
+                </>
+              ) : (
+                "Search"
+              )}
             </Button>
           </CardFooter>
         </Card>
-      )}
 
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Player Search</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter player's name"
-          />
-        </CardContent>
-        <CardFooter className="border-t px-6 py-4">
-          <Button onClick={handleSearch}>
-            {isSearching ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                <Label>Please wait</Label>
-              </>
-            ) : (
-              "Search"
-            )}
-          </Button>
-        </CardFooter>
-      </Card>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Search Results</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="whitespace-nowrap">Name</TableHead>
-                  <TableHead className="whitespace-nowrap">Rating</TableHead>
-                  <TableHead className="whitespace-nowrap">
-                    PDGA Number
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap">Class</TableHead>
-                  <TableHead className="whitespace-nowrap">City</TableHead>
-                  <TableHead className="whitespace-nowrap">State</TableHead>
-                  <TableHead className="whitespace-nowrap">Country</TableHead>
-                  <TableHead className="whitespace-nowrap">
-                    Membership Status
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              {results.length === 0 ? (
-                <TableBody>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Search Results</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center pt-10">
-                      {isSearching ? (
-                        <Loader2 size="32" className="mx-auto animate-spin" />
-                      ) : (
-                        <Label className="text-sm">No results found</Label>
-                      )}
-                    </TableCell>
+                    <TableHead className="whitespace-nowrap">Name</TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      Rating
+                    </TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      PDGA Number
+                    </TableHead>
+                    <TableHead className="whitespace-nowrap">Class</TableHead>
+                    <TableHead className="whitespace-nowrap">City</TableHead>
+                    <TableHead className="whitespace-nowrap">State</TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      Country
+                    </TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      Membership Status
+                    </TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      Action
+                    </TableHead>
                   </TableRow>
-                </TableBody>
-              ) : (
-                <TableBody>
-                  {results.map((player, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="whitespace-nowrap">
-                        {player.name}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {player.rating}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {player.pdgaNumber}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {player.class}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {player.city}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {player.state}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {player.country}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {player.membershipStatus}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          onClick={() => handleAddPlayer(player)}
-                          disabled={isAdding}
-                          className="whitespace-nowrap"
-                        >
-                          {isAdding ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            "Select"
-                          )}
-                        </Button>
+                </TableHeader>
+                {results.length === 0 ? (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center pt-10">
+                        {isSearching ? (
+                          <Loader2
+                            size="32"
+                            className="mx-auto animate-spin"
+                          />
+                        ) : (
+                          <Label className="text-sm">No results found</Label>
+                        )}
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              )}
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-=======
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
->>>>>>> origin/DRN-1241
-    </div>
-  );
+                  </TableBody>
+                ) : (
+                  <TableBody>
+                    {results.map((player, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="whitespace-nowrap">
+                          {player.name}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.rating}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.pdgaNumber}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.class}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.city}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.state}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.country}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {player.membershipStatus}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            onClick={() => handleAddPlayer(player)}
+                            disabled={isAdding}
+                            className="whitespace-nowrap"
+                          >
+                            {isAdding ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              "Select"
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                )}
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  </div>
+);
 };
 
 export default RosterPage;
