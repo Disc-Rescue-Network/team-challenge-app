@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { paginateArray, Pagination } from "../components/pagination";
+import { Badge } from "@/components/ui/badge";
 
 const RosterPage = () => {
   const [hasTeam, setHasTeam] = useState<boolean>(false);
@@ -53,6 +54,15 @@ const RosterPage = () => {
     perPage: "8",
     totalCount: 0,
   });
+  const [badgeStatus, setBadgeStatus] = useState<
+    "myTeamNotSet" | "myTeam" | "opponentTeam"
+  >("myTeamNotSet");
+
+  const badgeStatusMap = {
+    myTeamNotSet: "Set as my team",
+    myTeam: "My team",
+    opponentTeam: "Opponent team",
+  };
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -330,6 +340,15 @@ const RosterPage = () => {
     }
   };
 
+  const handleBadgeClick = () => {
+    // You can add any action you want here, for example:
+    toast({
+      title: "Team Size",
+      description: `Your team has ${team.players.length} players.`,
+      duration: 3000,
+    });
+  };
+
   return (
     <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -343,7 +362,17 @@ const RosterPage = () => {
           <Card className="w-full mb-4">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg md:text-2xl lg:text-2xl">
-                {team.name}
+                <span className="capitalize p-1 flex items-center gap-2">
+                  {team.name}
+                  <Button
+                    onClick={handleBadgeClick}
+                    className="p-0 h-auto min-w-0 bg-transparent hover:bg-transparent"
+                  >
+                    <Badge className="text-xs" variant="destructive">
+                      Opponent Team
+                    </Badge>
+                  </Button>
+                </span>
               </CardTitle>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
