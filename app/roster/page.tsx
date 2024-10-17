@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { put } from "@vercel/blob";
 import { Player } from "../interfaces/Player";
 import { Team } from "../interfaces/Team";
@@ -34,6 +34,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { paginateArray, Pagination } from "../components/pagination";
 import { Badge } from "@/components/ui/badge";
+import { getMyCookie } from "../utils/manage-cookies";
 
 const RosterPage = () => {
   const [hasTeam, setHasTeam] = useState<boolean>(false);
@@ -45,7 +46,7 @@ const RosterPage = () => {
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [isRemoving, setIsRemoving] = useState<boolean>(false);
-  const [isMyTeam, setIsMyTeam] = useState<boolean>(true);
+  const [myTeam, setMyTeam] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("team");
   const [teamNames, setTeamNames] = useState<string[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
@@ -86,8 +87,15 @@ const RosterPage = () => {
   }, []);
 
   useEffect(() => {
-    //TODO- get myTeam from cookie and put this fetchOpponentTeams() as a service
-    fetchOpponentTeams();
+    //-- get myTeam from cookie
+    const myTeam = getMyCookie("myTeam");
+    if (myTeam) {
+      setMyTeam(myTeam);
+      setBadgeStatus("myTeam");
+    } else {
+      console.log("passei aqui");
+      setBadgeStatus("myTeamNotSet");
+    }
   }, []);
 
   const handlePagination = (pageIndex: number) => {
@@ -116,11 +124,7 @@ const RosterPage = () => {
   //   setIsLoading(false);
   // };
 
-  const fetchOpponentTeams = async () => {
-    //TODO- get team from cookie
-    const myTeam = "Team one";
-    //---
-    console.log("passed myTeam", myTeam);
+  const fetchOpponentTeams = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -154,7 +158,12 @@ const RosterPage = () => {
       console.error("Error fetching opponent teams:", error);
     }
     setIsLoading(false);
-  };
+  }, [myTeam]);
+
+  useEffect(() => {
+    fetchOpponentTeams();
+  }, [fetchOpponentTeams]);
+
   const handleSearch = async () => {
     setIsSearching(true);
     const [firstName, lastName] = name.split(" ");
