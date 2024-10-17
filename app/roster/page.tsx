@@ -328,7 +328,7 @@ const RosterPage = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="px-2 gap-1 !mt-0">
-                  Teams <ChevronDown className="h-4 w-4" />
+                {selectedTeam || "Select a team"}  <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
