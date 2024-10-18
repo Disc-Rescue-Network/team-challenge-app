@@ -1,7 +1,7 @@
 "use client";
 
-import {useState, useEffect} from "react";
-import {Button} from "@/components/ui/button";
+import { useState, useEffect, SetStateAction, Dispatch } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,8 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -18,9 +18,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {toast} from "@/components/ui/use-toast";
-import {Loader2, ChevronDown} from "lucide-react";
-import {IState, State} from "country-state-city";
+import { toast } from "@/components/ui/use-toast";
+import { Loader2, ChevronDown } from "lucide-react";
+import { IState, State } from "country-state-city";
+import { PlayerSearchResult } from "./PlayerSearch";
 
 type InputVisibility = {
   lastName: boolean;
@@ -30,23 +31,19 @@ type InputVisibility = {
   country: boolean;
 };
 
-interface SearchProps {
+type SearchCardProps = {
   title: string;
-  onSearch: (searchParams: any) => Promise<void>;
+  onResults: (results: PlayerSearchResult[]) => void;
   isLoading: boolean;
-  results: any[];
-  inputVisibility: InputVisibility;
-  setInputVisibility: React.Dispatch<React.SetStateAction<InputVisibility>>;
-}
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
+};
 
-export const Search = ({
+export const SearchCard = ({
   title,
-  onSearch,
+  onResults,
   isLoading,
-  results,
-  inputVisibility,
-  setInputVisibility,
-}: SearchProps) => {
+  setIsLoading,
+}: SearchCardProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [pdgaNumber, setPdgaNumber] = useState("");
@@ -54,6 +51,13 @@ export const Search = ({
   const [states, setStates] = useState<IState[]>([]);
   const [selectedState, setSelectedState] = useState("NJ");
   const [country] = useState("US");
+  const [inputVisibility, setInputVisibility] = useState<InputVisibility>({
+    lastName: true,
+    pdgaNumber: true,
+    city: true,
+    state: true,
+    country: true,
+  });
 
   useEffect(() => {
     const fetchedStates = State.getStatesOfCountry("US");
@@ -61,15 +65,47 @@ export const Search = ({
   }, []);
 
   const handleSearch = async () => {
-    const searchParams = {
-      firstName,
-      lastName,
-      pdgaNumber,
-      city,
-      state: selectedState,
-      country,
-    };
-    await onSearch(searchParams);
+    try {
+      setIsLoading(true);
+
+      const response = await fetch("/api/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          pdgaNumber,
+          city,
+          state: selectedState,
+          country,
+        }),
+      });
+      const data = await response.json();
+      if (data.error) {
+        toast({
+          title: "Error",
+          description: `${data.error}`,
+          variant: "destructive",
+          duration: 3000,
+        });
+      } else {
+        onResults(data.players || []);
+      }
+    } catch (error) {
+      console.error(`Error fetching data: ${error}`);
+      onResults([]);
+      toast({
+        title: "Error",
+        description: "Failed to fetch data",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const [isMobile, setIsMobile] = useState(false);

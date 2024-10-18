@@ -1,14 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+// --shadcn
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Label } from "@/components/ui/label";
 import {
   Table,
@@ -18,60 +13,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { toast } from "@/components/ui/use-toast";
-import { Loader2, ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
-import { IState, State } from "country-state-city";
+// --icons
+import { Loader2 } from "lucide-react";
+// --custom components
 import { paginateArray, Pagination } from "./pagination";
-import { Search } from "./search";
+import { SearchCard } from "./search";
+// --interfaces
+import { Player } from "../interfaces/Player";
 
-type InputVisibility = {
-  lastName: boolean;
-  pdgaNumber: boolean;
-  city: boolean;
-  state: boolean;
-  country: boolean;
-};
+export type PlayerSearchResult = Omit<Player, "tempRating" | "rating">;
 
 function PlayerSearch() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [pdgaNumber, setPdgaNumber] = useState("");
-  const [city, setCity] = useState("");
-  const [states, setStates] = useState<IState[]>([]);
-  const [selectedState, setSelectedState] = useState("NJ");
-  const [country] = useState("US");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [inputVisibility, setInputVisibility] = useState<InputVisibility>({
-    lastName: true,
-    pdgaNumber: true,
-    city: true,
-    state: true,
-    country: true,
-  });
+
   const [paginationConfig, setPaginationConfig] = useState({
     pageIndex: 0,
     perPage: "10",
     totalCount: 0,
   });
-
-  useEffect(() => {
-    const fetchedStates = State.getStatesOfCountry("US");
-    setStates(fetchedStates);
-  }, []);
-
-  useEffect(() => {
-    const fetchedStates = State.getStatesOfCountry("US");
-    setStates(fetchedStates);
-  }, []);
+  // -- set the player search results and set the pagination config with the total count of results
+  const handleResults = (results: PlayerSearchResult[]) => {
+    setResults(results);
+    setPaginationConfig((previous) => ({
+      ...previous,
+      totalCount: results.length,
+    }));
+  };
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -86,73 +54,25 @@ function PlayerSearch() {
     };
   }, []);
 
+  // -- Pagination -- set the page index
   const handlePagination = (pageIndex: number) => {
     setPaginationConfig((previous) => ({ ...previous, pageIndex }));
   };
 
+  // -- Pagination -- set paginated results
   const paginatedResults = paginateArray(
     results,
     paginationConfig.pageIndex,
     paginationConfig.perPage
   );
 
-  const handleSearch = async () => {
-    try {
-      setIsLoading(true);
-
-      const response = await fetch("/api/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          pdgaNumber,
-          city,
-          state: selectedState,
-          country,
-        }),
-      });
-      const data = await response.json();
-      if (data.error) {
-        toast({
-          title: "Error",
-          description: `${data.error}`,
-          variant: "destructive",
-          duration: 3000,
-        });
-      } else {
-        setResults(data.players || []);
-        setPaginationConfig((previous) => ({
-          ...previous,
-          totalCount: data.players.length,
-        }));
-      }
-    } catch (error) {
-      console.error(`Error fetching data: ${error}`);
-      setResults([]);
-      toast({
-        title: "Error",
-        description: "Failed to fetch data",
-        variant: "destructive",
-        duration: 3000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="flex flex-1 flex-col p-3 lg:p-0 gap-8 max-w-[1300px]">
-      <Search
+      <SearchCard
         title="Player Search"
-        onSearch={handleSearch}
+        onResults={handleResults}
         isLoading={isLoading}
-        results={results}
-        inputVisibility={inputVisibility}
-        setInputVisibility={setInputVisibility}
+        setIsLoading={setIsLoading}
       />
       <Card>
         <CardHeader>
