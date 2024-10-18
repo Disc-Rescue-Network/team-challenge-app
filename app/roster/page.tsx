@@ -33,8 +33,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { paginateArray, Pagination } from "../components/pagination";
-import { Badge } from "@/components/ui/badge";
-import { getMyCookie } from "../utils/manage-cookies";
+
+import { getMyCookie, hasMyCookie, setMyCookie } from "../utils/manage-cookies";
+import TeamBadgeStatus from "../components/team-badge-status";
 
 const RosterPage = () => {
   const [hasTeam, setHasTeam] = useState<boolean>(false);
@@ -49,21 +50,12 @@ const RosterPage = () => {
   const [myTeam, setMyTeam] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("team");
   const [teamNames, setTeamNames] = useState<string[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<string>("");
   const [paginationConfig, setPaginationConfig] = useState({
     pageIndex: 0,
     perPage: "8",
     totalCount: 0,
   });
-  const [badgeStatus, setBadgeStatus] = useState<
-    "myTeamNotSet" | "myTeam" | "opponentTeam"
-  >("myTeamNotSet");
-
-  const badgeStatusMap = {
-    myTeamNotSet: "Set as my team",
-    myTeam: "My team",
-    opponentTeam: "Opponent team",
-  };
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -89,13 +81,7 @@ const RosterPage = () => {
   useEffect(() => {
     //-- get myTeam from cookie
     const myTeam = getMyCookie("myTeam");
-    if (myTeam) {
-      setMyTeam(myTeam);
-      setBadgeStatus("myTeam");
-    } else {
-      console.log("passei aqui");
-      setBadgeStatus("myTeamNotSet");
-    }
+    if (myTeam) setMyTeam(myTeam);
   }, []);
 
   const handlePagination = (pageIndex: number) => {
@@ -103,7 +89,7 @@ const RosterPage = () => {
   };
 
   const paginatedResults = paginateArray(
-    team.players,
+    team.players.sort((a, b) => a.name.localeCompare(b.name)),
     paginationConfig.pageIndex,
     paginationConfig.perPage
   );
@@ -350,12 +336,21 @@ const RosterPage = () => {
   };
 
   const handleBadgeClick = () => {
-    // You can add any action you want here, for example:
-    toast({
-      title: "Team Size",
-      description: `Your team has ${team.players.length} players.`,
-      duration: 3000,
-    });
+    const hasCookie = hasMyCookie("myTeam");
+    if (hasCookie) return;
+    // --store the selected team on cookie--
+    setMyCookie("myTeam", selectedTeam);
+    // --get the selected team from cookie--
+    const teamSavedOnCookie = getMyCookie("myTeam");
+    if (teamSavedOnCookie === selectedTeam) {
+      setMyTeam(selectedTeam);
+
+      toast({
+        title: "My team 🥏",
+        description: `You successfully set ${selectedTeam} as your team.`,
+        duration: 3000,
+      });
+    }
   };
 
   return (
@@ -371,17 +366,13 @@ const RosterPage = () => {
           <Card className="w-full mb-4">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg md:text-2xl lg:text-2xl">
-                <span className="capitalize p-1 flex items-center gap-2">
-                  {team.name}
-                  <Button
-                    onClick={handleBadgeClick}
-                    className="p-0 h-auto min-w-0 bg-transparent hover:bg-transparent"
-                  >
-                    <Badge className="text-xs" variant="destructive">
-                      Opponent Team
-                    </Badge>
-                  </Button>
-                </span>
+                {selectedTeam && (
+                  <TeamBadgeStatus
+                    myTeam={myTeam}
+                    selectedTeam={selectedTeam}
+                    handleBadgeClick={handleBadgeClick}
+                  />
+                )}
               </CardTitle>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

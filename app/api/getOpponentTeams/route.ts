@@ -5,14 +5,14 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const myTeam = searchParams.get("myTeam");
 
-  if (!myTeam) {
-    return NextResponse.json(
-      {
-        error: "No team provided.You must set your team to get opponent teams.",
-      },
-      { status: 400 }
-    );
-  }
+  // if (!myTeam) {
+  //   return NextResponse.json(
+  //     {
+  //       error: "No team provided.You must set your team to get opponent teams.",
+  //     },
+  //     { status: 400 }
+  //   );
+  // }
 
   try {
     // List the blobs to find all opponent team files

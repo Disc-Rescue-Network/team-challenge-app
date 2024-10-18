@@ -4,7 +4,7 @@ import { OptionsType } from "cookies-next/lib/types";
 export const setMyCookie = (
   key: string,
   value: string,
-  options: OptionsType
+  options?: OptionsType
 ) => {
   setCookie(key, value, options);
 };
