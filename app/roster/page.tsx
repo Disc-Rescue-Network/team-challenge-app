@@ -73,7 +73,9 @@ const RosterPage = () => {
     perPage: "8",
     totalCount: 0,
   });
-
+  const [removingPlayers, setRemovingPlayers] = useState<
+    Record<string, boolean>
+  >({});
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedGender, setSelectedGender] = useState("male");
@@ -171,73 +173,6 @@ const RosterPage = () => {
     fetchOpponentTeams();
   }, [fetchOpponentTeams]);
 
-  const handleSearch = async () => {
-    setIsSearching(true);
-    const [firstName, lastName] = name.split(" ");
-    const response = await fetch("/api/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ firstName, lastName: lastName || "" }),
-    });
-    const data = await response.json();
-    setResults(data.players);
-    setIsSearching(false);
-  };
-
-  // const handleAddPlayer = async (player: Player) => {
-  //   try {
-  //     setIsAdding(true);
-  //     const response = await fetch("/api/addPlayerToTeam", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         player,
-  //         teamName: team.name,
-  //         isOpponent: false,
-  //       }),
-  //     });
-
-  //     if (response.status === 400) {
-  //       const data = await response.json();
-  //       toast({
-  //         title: "Player already exists",
-  //         description: data.message,
-  //         variant: "destructive",
-  //         duration: 3000,
-  //       });
-  //       setIsAdding(false);
-  //       return;
-  //     }
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to add player");
-  //     }
-
-  //     const data = await response.json();
-  //     setTeam(data.team);
-  //     toast({
-  //       title: "Player added",
-  //       description: "Player added to your team",
-  //       variant: "default",
-  //       duration: 3000,
-  //     });
-  //   } catch (error) {
-  //     console.error("Error adding player:", error);
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to add player to your team",
-  //       variant: "destructive",
-  //       duration: 3000,
-  //     });
-  //   } finally {
-  //     setIsAdding(false);
-  //   }
-  // };
-
   const handleSaveTeam = async () => {
     try {
       setIsLoading(true);
@@ -294,7 +229,8 @@ const RosterPage = () => {
 
   const handleRemovePlayer = async (player: Player) => {
     try {
-      setIsRemoving(true);
+      // --set the player to be removing
+      setRemovingPlayers((prev) => ({ ...prev, [player.pdgaNumber]: true }));
       const response = await fetch("/api/removePlayer", {
         method: "POST",
         headers: {
@@ -303,7 +239,6 @@ const RosterPage = () => {
         body: JSON.stringify({
           player,
           teamName: team.name,
-          isOpponent: false,
         }),
       });
 
@@ -328,7 +263,7 @@ const RosterPage = () => {
         duration: 3000,
       });
     } finally {
-      setIsRemoving(false);
+      setRemovingPlayers((prev) => ({ ...prev, [player.pdgaNumber]: false }));
     }
   };
 
@@ -375,11 +310,6 @@ const RosterPage = () => {
         duration: 3000,
       });
     }
-  };
-
-  const selectPlayer = async (player: Player) => {
-    setSelectedPlayer(player);
-    setIsDialogOpen(true);
   };
 
   return (
@@ -478,11 +408,11 @@ const RosterPage = () => {
                             <TableCell>
                               <Button
                                 onClick={() => handleRemovePlayer(player)}
-                                disabled={isRemoving}
+                                disabled={removingPlayers[player.pdgaNumber]}
                                 variant="destructive"
                                 className="whitespace-nowrap"
                               >
-                                {isRemoving ? (
+                                {removingPlayers[player.pdgaNumber] ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   "Remove"
