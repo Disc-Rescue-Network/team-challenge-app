@@ -104,6 +104,7 @@ const RosterPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        cache: "no-store",
       });
       const data = await response.json();
 
@@ -115,6 +116,18 @@ const RosterPage = () => {
         setTeams(data);
       }
 
+      // Update the currently selected team if it exists
+      if (selectedTeam) {
+        const updatedSelectedTeam = data.find((t) => t.name === selectedTeam);
+        if (updatedSelectedTeam) {
+          setTeam(updatedSelectedTeam);
+          setPaginationConfig((prev) => ({
+            ...prev,
+            totalCount: updatedSelectedTeam.players.length,
+          }));
+        }
+      }
+      //
       if (response.status === 400) {
         toast({
           title: "Error",
@@ -127,11 +140,14 @@ const RosterPage = () => {
       console.error("Error fetching opponent teams:", error);
     }
     setIsLoading(false);
-  }, []);
+  }, [selectedTeam]);
 
   useEffect(() => {
-    fetchAllTeams();
-  }, [fetchAllTeams]);
+    if (activeTab === "team") {
+      console.log("fetching all teams");
+      fetchAllTeams();
+    }
+  }, [activeTab, fetchAllTeams]);
 
   const handleSaveTeam = async () => {
     try {
