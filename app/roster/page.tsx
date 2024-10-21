@@ -159,8 +159,9 @@ const RosterPage = () => {
       setIsLoading(true);
       const teamData: Team = {
         name: newTeam.name,
-        players: newTeam.players,
+        players: [],
       };
+      console.log("teamData", teamData);
       const response = await fetch("/api/saveTeam", {
         method: "POST",
         headers: {
@@ -176,7 +177,7 @@ const RosterPage = () => {
           variant: "default",
           duration: 5000,
         });
-        setTeam({ name: "", players: [] });
+        setNewTeam({ name: "", players: [] });
         setActiveTab("addPlayer");
       }
 
