@@ -96,18 +96,15 @@ const RosterPage = () => {
     paginationConfig.perPage
   );
 
-  const fetchOpponentTeams = useCallback(async () => {
+  const fetchAllTeams = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/getOpponentTeams/?myTeam=${encodeURIComponent(myTeam)}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`/api/getAllTeams`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       const data = await response.json();
 
       if (response.status === 200) {
@@ -130,11 +127,11 @@ const RosterPage = () => {
       console.error("Error fetching opponent teams:", error);
     }
     setIsLoading(false);
-  }, [myTeam]);
+  }, []);
 
   useEffect(() => {
-    fetchOpponentTeams();
-  }, [fetchOpponentTeams]);
+    fetchAllTeams();
+  }, [fetchAllTeams]);
 
   const handleSaveTeam = async () => {
     try {
@@ -426,6 +423,7 @@ const RosterPage = () => {
     </div>
   );
 };
+
 function extractTeamNames(
   teams: Array<{ name: string; players: Player[] }>
 ): string[] {
