@@ -111,11 +111,17 @@ const AddPlayerToTeam = () => {
 
         const data = await response.json();
         const updatedSearchResult = results.filter(
-          (player) => player.name !== selectedPlayer
+          (player) => player.name !== selectedPlayer.name
         );
+        console.log("Updated search result", updatedSearchResult);
         setResults(updatedSearchResult);
+        setPaginationConfig((previous) => ({
+          ...previous,
+          totalCount: updatedSearchResult.length,
+        }));
+
         toast({
-          title: "Player added",
+          title: "Player added 🚩",
           description: `Player ${selectedPlayer.name} added to team ${selectedTeam}`,
           variant: "default",
           duration: 3000,
