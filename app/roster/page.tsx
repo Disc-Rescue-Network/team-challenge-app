@@ -333,7 +333,7 @@ const RosterPage = () => {
     <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-3 m-auto justify-center w-90 max-w-[400px] mb-[10px]">
-          <TabsTrigger value="team">ManageTeam</TabsTrigger>
+          <TabsTrigger value="team">Manage Team</TabsTrigger>
           <TabsTrigger value="createTeam">Create Team</TabsTrigger>
           <TabsTrigger value="addPlayer">Add Player</TabsTrigger>
         </TabsList>
