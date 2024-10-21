@@ -237,7 +237,7 @@ const RosterPage = () => {
       }));
       toast({
         title: "Player removed",
-        description: `Player removed from ${data.team.name}`,
+        description: `Player ${player.name} removed from ${data.team.name}`,
         variant: "default",
         duration: 3000,
       });
@@ -266,17 +266,46 @@ const RosterPage = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
   // -- to select the team from the dropdown
-  const handleTeamSelect = (teamName: string) => {
+  const handleTeamSelect = async (teamName: string) => {
     setSelectedTeam(teamName);
-    const selectedTeam = teams.find((team) => team.name === teamName);
-    if (selectedTeam) {
-      setTeam(selectedTeam);
-      // Update the totalCount when a team is selected
-      setPaginationConfig((previous) => ({
-        ...previous,
-        totalCount: selectedTeam.players.length,
-      }));
+    // --fetch the latestteam data
+    try {
+      const response = await fetch(
+        `/api/getTeam/?teamName=${encodeURIComponent(teamName)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+      const data = await response.json();
+      if (response.status === 200) {
+        console.log("data", data);
+        setTeam(data);
+        // Update the totalCount when a team is selected
+        setPaginationConfig((previous) => ({
+          ...previous,
+          totalCount: data.players.length,
+        }));
+      } else {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Unable to fetch team data",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   };
   //-- to set the team on cookie

@@ -16,8 +16,8 @@ export async function POST(request: Request) {
 
     // -- To avoid duplicate teams, we check if the team already exists in the blob storage
     const { blobs } = await list();
-    const myTeamBlob = blobs.find(
-      (blob) => blob.pathname === `${teamData.name}`
+    const myTeamBlob = blobs.find((blob) =>
+      blob.pathname.includes(`${teamData.name}`)
     );
 
     if (myTeamBlob) {

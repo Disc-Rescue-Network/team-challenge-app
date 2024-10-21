@@ -8,7 +8,9 @@ export async function POST(req: NextRequest) {
 
     // List the blobs to find the unique URL for the team JSON file
     const { blobs } = await list();
-    const teamBlob = blobs.find((blob) => blob.pathname === `${teamName}.json`);
+    const teamBlob = blobs.find((blob) =>
+      blob.pathname.includes(`${teamName}`)
+    );
 
     if (!teamBlob) {
       throw new Error(`Team file for ${teamName} not found`);
