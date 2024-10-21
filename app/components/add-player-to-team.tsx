@@ -59,12 +59,11 @@ const AddPlayerToTeam = () => {
 
   const [paginationConfig, setPaginationConfig] = useState({
     pageIndex: 0,
-    perPage: "10",
+    perPage: "5",
     totalCount: 0,
   });
 
   const fetchAllTeams = useCallback(async () => {
-    setIsLoading(true);
     try {
       const response = await fetch(`/api/getAllTeams`, {
         method: "GET",
@@ -91,9 +90,9 @@ const AddPlayerToTeam = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching opponent teams:", error);
+      console.error("Error all teams:", error);
     }
-    setIsLoading(false);
+    //setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -113,7 +112,7 @@ const AddPlayerToTeam = () => {
           body: JSON.stringify({
             player: selectedPlayer,
             teamName: selectedTeam,
-            isOpponent: false,
+            gender: selectedGender,
           }),
         });
 
@@ -179,7 +178,7 @@ const AddPlayerToTeam = () => {
         setIsLoading={setIsLoading}
       />
 
-      <Card className="w-full">
+      <Card className="w-full mt-4 mb-4">
         <CardHeader>
           <CardTitle>Search Results</CardTitle>
         </CardHeader>
@@ -245,7 +244,10 @@ const AddPlayerToTeam = () => {
                       </TableCell>
                       <TableCell>
                         <Button
-                          // onClick={() => selectPlayer(player)}
+                          onClick={() => {
+                            setSelectedPlayer(player);
+                            setIsDialogOpen(true);
+                          }}
                           disabled={isAdding}
                           className="whitespace-nowrap"
                         >

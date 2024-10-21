@@ -9,5 +9,6 @@ export interface Player {
   membershipStatus: string;
   active: boolean;
   isEditing: boolean;
+  gender: "male" | "female";
   tempRating: number;
 }

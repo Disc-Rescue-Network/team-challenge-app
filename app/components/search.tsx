@@ -92,7 +92,9 @@ export const SearchCard = ({
           duration: 3000,
         });
       } else {
-        onResults(data.players || []);
+        onResults(
+          data.players.sort((a, b) => a.name.localeCompare(b.name)) || []
+        );
       }
     } catch (error) {
       console.error(`Error fetching data: ${error}`);
