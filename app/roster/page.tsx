@@ -282,7 +282,8 @@ const RosterPage = () => {
     const hasCookie = hasMyCookie("myTeam");
     if (hasCookie) return;
     // --store the selected team on cookie--
-    setMyCookie("myTeam", selectedTeam);
+    //* -- 365 days in seconds (1 year)
+    setMyCookie("myTeam", selectedTeam, { maxAge: 365 * 24 * 60 * 60 });
     // --get the selected team from cookie--
     const teamSavedOnCookie = getMyCookie("myTeam");
     if (teamSavedOnCookie === selectedTeam) {
