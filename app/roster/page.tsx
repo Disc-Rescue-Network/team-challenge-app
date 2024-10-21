@@ -255,10 +255,12 @@ const RosterPage = () => {
       if (response.status === 200) {
         toast({
           title: "Success",
-          description: `Team ${teamData.name} saved successfully`,
+          description: `Team ${teamData.name} saved successfully. Next, click on "Add Player" to add players to your team.🥏`,
           variant: "default",
-          duration: 3000,
+          duration: 5000,
         });
+        setTeam({ name: "", players: [] });
+        setActiveTab("addPlayer");
       }
 
       if (response.status === 400) {
