@@ -14,9 +14,7 @@ export async function POST(req: NextRequest) {
     const { blobs } = await list();
     console.log("blobs", blobs);
 
-    const teamBlob = blobs.find((blob) =>
-      blob.pathname.startsWith(`${teamName}.json`)
-    );
+    const teamBlob = blobs.find((blob) => blob.pathname === `${teamName}.json`);
     console.log("teamBlob", teamBlob);
 
     if (!teamBlob) {

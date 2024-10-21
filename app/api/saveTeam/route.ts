@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { put,list  } from "@vercel/blob";
+import { put, list } from "@vercel/blob";
 import { Team } from "@/app/interfaces/Team";
 
 export async function POST(request: Request) {
@@ -9,19 +9,22 @@ export async function POST(request: Request) {
     console.log("Data:", data);
     const teamData: Team = data.teamData;
     console.log("Team data:", teamData);
-   // const isMyTeam: boolean = data.isMyTeam;
-   // console.log("Is my team:", isMyTeam);
-   // const prefix = isMyTeam ? "myteam_" : "opponent_";
+    // const isMyTeam: boolean = data.isMyTeam;
+    // console.log("Is my team:", isMyTeam);
+    // const prefix = isMyTeam ? "myteam_" : "opponent_";
     const fileName = `${teamData.name}.json`;
 
     // -- To avoid duplicate teams, we check if the team already exists in the blob storage
     const { blobs } = await list();
-    const myTeamBlob = blobs.find((blob) =>
-      blob.pathname.startsWith(`${teamData.name}`)
+    const myTeamBlob = blobs.find(
+      (blob) => blob.pathname === `${teamData.name}`
     );
 
     if (myTeamBlob) {
-      return NextResponse.json({ error: "Failed to save team. Team already exists." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Failed to save team. Team already exists." },
+        { status: 400 }
+      );
     }
 
     // -- If the team does not exist, we save it to the blob storage

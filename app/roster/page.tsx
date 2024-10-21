@@ -44,6 +44,7 @@ import AddPlayerToTeam from "../components/add-player-to-team";
 
 const RosterPage = () => {
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
+  const [newTeam, setNewTeam] = useState<Team>({ name: "", players: [] });
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [myTeam, setMyTeam] = useState<string>("");
@@ -157,8 +158,8 @@ const RosterPage = () => {
     try {
       setIsLoading(true);
       const teamData: Team = {
-        name: team.name,
-        players: team.players,
+        name: newTeam.name,
+        players: newTeam.players,
       };
       const response = await fetch("/api/saveTeam", {
         method: "POST",
@@ -302,7 +303,7 @@ const RosterPage = () => {
     <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-3 m-auto justify-center w-90 max-w-[400px] mb-[10px]">
-          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="team">ManageTeam</TabsTrigger>
           <TabsTrigger value="createTeam">Create Team</TabsTrigger>
           <TabsTrigger value="addPlayer">Add Player</TabsTrigger>
         </TabsList>
@@ -431,8 +432,8 @@ const RosterPage = () => {
             <CardContent>
               <Input
                 type="text"
-                value={team.name}
-                onChange={(e) => setTeam({ ...team, name: e.target.value })}
+                value={newTeam.name}
+                onChange={(e) => setNewTeam({ ...team, name: e.target.value })}
                 placeholder="Enter team name"
               />
             </CardContent>
