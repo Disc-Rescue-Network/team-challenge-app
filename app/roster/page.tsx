@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { put } from "@vercel/blob";
 // -- types
 import { Player } from "../interfaces/Player";
 import { Team } from "../interfaces/Team";
@@ -20,7 +19,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -34,36 +32,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 // -- icons
 import { ChevronDown, Loader2 } from "lucide-react";
 // --custom components
 import { paginateArray, Pagination } from "../components/pagination";
 import TeamBadgeStatus from "../components/team-badge-status";
-import GenderSwitch from "../components/genderSwitch";
+
 // --utils
 import { getMyCookie, hasMyCookie, setMyCookie } from "../utils/manage-cookies";
 import AddPlayerToTeam from "../components/add-player-to-team";
 
 const RosterPage = () => {
-  const [hasTeam, setHasTeam] = useState<boolean>(false);
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
   const [teams, setTeams] = useState<Team[]>([]);
-  const [name, setName] = useState<string>("");
-  const [results, setResults] = useState<Player[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [isAdding, setIsAdding] = useState<boolean>(false);
-  const [isRemoving, setIsRemoving] = useState<boolean>(false);
   const [myTeam, setMyTeam] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("team");
   const [teamNames, setTeamNames] = useState<string[]>([]);
@@ -76,9 +58,6 @@ const RosterPage = () => {
   const [removingPlayers, setRemovingPlayers] = useState<
     Record<string, boolean>
   >({});
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedGender, setSelectedGender] = useState("male");
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -116,22 +95,6 @@ const RosterPage = () => {
     paginationConfig.pageIndex,
     paginationConfig.perPage
   );
-
-  // const fetchTeamData = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await fetch("/api/getMyTeam");
-  //     const data = await response.json();
-  //     console.log("Team data:", data);
-  //     if (data.name !== "") {
-  //       setTeam(data);
-  //       setHasTeam(true);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching team data:", error);
-  //   }
-  //   setIsLoading(false);
-  // };
 
   const fetchOpponentTeams = useCallback(async () => {
     setIsLoading(true);
