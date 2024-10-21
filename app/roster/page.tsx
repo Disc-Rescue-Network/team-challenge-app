@@ -116,13 +116,14 @@ const RosterPage = () => {
         setTeams(data);
       }
 
-      // Update the currently selected team if it exists
+      // -- Update the currently selected team if it exists
+      //! we need to ensure that the team data is refreshed when you return to the "team" tab, especially after adding or removing players.
       if (selectedTeam) {
         const updatedSelectedTeam = data.find((t) => t.name === selectedTeam);
         if (updatedSelectedTeam) {
           setTeam(updatedSelectedTeam);
-          setPaginationConfig((prev) => ({
-            ...prev,
+          setPaginationConfig((previous) => ({
+            ...previous,
             totalCount: updatedSelectedTeam.players.length,
           }));
         }
@@ -140,9 +141,12 @@ const RosterPage = () => {
       console.error("Error fetching opponent teams:", error);
     }
     setIsLoading(false);
+    // --Added selectedTeam as a dependency to the useCallback hook for fetchAllTeams.
+    // --This means the function will be recreated if selectedTeam changes, ensuring we're always working with the most up-to-date team data and players.
   }, [selectedTeam]);
 
   useEffect(() => {
+    // --fetch all teams when the team tab is active to get the latest list of teams
     if (activeTab === "team") {
       console.log("fetching all teams");
       fetchAllTeams();
@@ -224,9 +228,14 @@ const RosterPage = () => {
 
       const data = await response.json();
       setTeam(data.team);
+      // --update the total count of players on the team after removing a player
+      setPaginationConfig((previous) => ({
+        ...previous,
+        totalCount: data.team.players.length,
+      }));
       toast({
         title: "Player removed",
-        description: "Player removed from your team",
+        description: `Player removed from ${data.team.name}`,
         variant: "default",
         duration: 3000,
       });

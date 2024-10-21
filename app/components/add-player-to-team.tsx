@@ -8,17 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogFooter,
@@ -27,15 +19,14 @@ import {
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import {
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Player } from "../interfaces/Player";
 import GenderSwitch from "./genderSwitch";
 import { Team } from "../interfaces/Team";
@@ -44,14 +35,12 @@ import { PlayerSearchResult } from "./PlayerSearch";
 import { paginateArray, Pagination } from "./pagination";
 
 const AddPlayerToTeam = () => {
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [name, setName] = useState<string>("");
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedGender, setSelectedGender] = useState("male");
   const [selectedTeam, setSelectedTeam] = useState<string>("");
-  const [team, setTeam] = useState<Team>({ name: "", players: [] });
+  // const [team, setTeam] = useState<Team>({ name: "", players: [] });
   const [teamNames, setTeamNames] = useState<string[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -102,7 +91,7 @@ const AddPlayerToTeam = () => {
   const handleConfirmAddPlayer = async () => {
     if (selectedPlayer && selectedTeam) {
       setIsAdding(true);
-
+      console.log("Results", results);
       try {
         const response = await fetch("/api/addPlayerToTeam", {
           method: "POST",
@@ -121,7 +110,10 @@ const AddPlayerToTeam = () => {
         }
 
         const data = await response.json();
-        setTeam(data.team);
+        const updatedSearchResult = results.filter(
+          (player) => player.name !== selectedPlayer
+        );
+        setResults(updatedSearchResult);
         toast({
           title: "Player added",
           description: `Player ${selectedPlayer.name} added to team ${selectedTeam}`,
