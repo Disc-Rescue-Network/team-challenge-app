@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 // --shadcn
 import {
   Table,
@@ -55,12 +55,51 @@ const AddPlayerToTeam = () => {
   const [teamNames, setTeamNames] = useState<string[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
 
   const [paginationConfig, setPaginationConfig] = useState({
     pageIndex: 0,
     perPage: "10",
     totalCount: 0,
   });
+
+  const fetchAllTeams = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/getAllTeams`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+
+      if (response.status === 200) {
+        const extractedTeamNames = extractTeamNames(data).sort((a, b) =>
+          a.localeCompare(b)
+        );
+        setTeamNames(extractedTeamNames);
+        setTeams(data);
+      }
+
+      if (response.status === 400) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching opponent teams:", error);
+    }
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchAllTeams();
+  }, [fetchAllTeams]);
+
   const handleConfirmAddPlayer = async () => {
     if (selectedPlayer && selectedTeam) {
       setIsAdding(true);
@@ -285,5 +324,9 @@ const AddPlayerToTeam = () => {
     </>
   );
 };
-
+function extractTeamNames(
+  teams: Array<{ name: string; players: Player[] }>
+): string[] {
+  return teams.map((team) => team.name);
+}
 export default AddPlayerToTeam;
