@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     );
 
     if (!myTeamBlob) {
-      throw new Error("My team file not found");
+      return NextResponse.json({ message: "Team not found" }, { status: 404 });
     }
 
     const blobUrl = myTeamBlob.url;

@@ -22,6 +22,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Loader2, ChevronDown } from "lucide-react";
 import { IState, State } from "country-state-city";
 import { PlayerSearchResult } from "./PlayerSearch";
+import { Player } from "../interfaces/Player";
 
 type InputVisibility = {
   lastName: boolean;
@@ -92,9 +93,8 @@ export const SearchCard = ({
           duration: 3000,
         });
       } else {
-        onResults(
-          data.players.sort((a, b) => a.name.localeCompare(b.name)) || []
-        );
+        const players: PlayerSearchResult[] = data.players;
+        onResults(players.sort((a, b) => a.name.localeCompare(b.name)) || []);
       }
     } catch (error) {
       console.error(`Error fetching data: ${error}`);

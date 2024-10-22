@@ -25,9 +25,9 @@ export async function GET(request: NextRequest) {
     // Return the list of opponent teams
     return NextResponse.json(allTeams);
   } catch (error: any) {
-    console.error("Error loading opponent teams:", error);
+    console.error("Error loading all teams:", error);
     return NextResponse.json(
-      { message: "Error loading opponent teams", error },
+      { message: "Error loading all teams", error },
       { status: 500 }
     );
   }

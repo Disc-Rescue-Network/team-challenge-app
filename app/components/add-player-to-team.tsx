@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect, useCallback } from "react";
 // --shadcn
 import {
@@ -60,6 +61,16 @@ const AddPlayerToTeam = () => {
           "Content-Type": "application/json",
         },
       });
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: "Fail to fetch all teams",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+
       const data = await response.json();
 
       if (response.status === 200) {
@@ -104,12 +115,16 @@ const AddPlayerToTeam = () => {
             gender: selectedGender,
           }),
         });
-
-        if (!response.ok) {
-          throw new Error("Failed to add player");
+        const data = await response.json();
+        if (data.status === 400) {
+          toast({
+            title: "Error - Player",
+            description: data.message,
+            variant: "destructive",
+            duration: 3000,
+          });
         }
 
-        const data = await response.json();
         const updatedSearchResult = results.filter(
           (player) => player.name !== selectedPlayer.name
         );

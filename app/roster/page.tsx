@@ -105,8 +105,17 @@ const RosterPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        cache: "no-store",
       });
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: "Fail to fetch all teams",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+
       const data = await response.json();
 
       if (response.status === 200) {
@@ -120,7 +129,9 @@ const RosterPage = () => {
       // -- Update the currently selected team if it exists
       //! we need to ensure that the team data is refreshed when you return to the "team" tab, especially after adding or removing players.
       if (selectedTeam) {
-        const updatedSelectedTeam = data.find((t) => t.name === selectedTeam);
+        const updatedSelectedTeam = data.find(
+          (t: { name: string }) => t.name === selectedTeam
+        );
         if (updatedSelectedTeam) {
           setTeam(updatedSelectedTeam);
           setPaginationConfig((previous) => ({
@@ -279,7 +290,6 @@ const RosterPage = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          cache: "no-store",
         }
       );
       const data = await response.json();
