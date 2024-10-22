@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { list } from "@vercel/blob";
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const teamName = searchParams.get("teamName");
+
   try {
-    // List the blobs to find the unique URL for the 'myteam_' prefixed files
     const { blobs } = await list();
-    const myTeamBlob = blobs.find((blob) =>
-      blob.pathname.startsWith("myteam_")
+
+    const teamBlob = blobs.find((blob) =>
+      blob.pathname.includes(`${teamName}`)
     );
 
-    if (!myTeamBlob) {
-      return NextResponse.json({ message: "Team not found" }, { status: 404 });
+    console.log("teamBlob🤜", teamBlob);
+    if (!teamBlob) {
+      throw new Error("My team file not found");
     }
 
-    const blobUrl = myTeamBlob.url;
+    const blobUrl = teamBlob.url;
 
     // Add a cache-busting query parameter
     const cacheBustingUrl = `${blobUrl}?timestamp=${Date.now()}`;
@@ -23,6 +27,7 @@ export async function GET(req: NextRequest) {
     const data = await response.json();
 
     // Return the team data
+
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("Error loading data:", error);

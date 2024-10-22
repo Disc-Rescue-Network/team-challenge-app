@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
@@ -30,7 +30,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex row-auto w-full h-full">
+          <div className="flex row-auto w-full h-full ">
             <SideMenu />
             <div className="w-full">
               <MenuHeader />

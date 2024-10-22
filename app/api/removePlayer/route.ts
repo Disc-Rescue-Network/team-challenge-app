@@ -4,13 +4,12 @@ import { Team } from "@/app/interfaces/Team";
 
 export async function POST(req: NextRequest) {
   try {
-    const { player, teamName, isOpponent } = await req.json();
-    const prefix = isOpponent ? "opponent_" : "myteam_";
+    const { player, teamName } = await req.json();
 
     // List the blobs to find the unique URL for the team JSON file
     const { blobs } = await list();
     const teamBlob = blobs.find((blob) =>
-      blob.pathname.startsWith(`${prefix}${teamName}.json`)
+      blob.pathname.includes(`${teamName}`)
     );
 
     if (!teamBlob) {
@@ -34,7 +33,7 @@ export async function POST(req: NextRequest) {
     team.players = updatedPlayers;
 
     // Upload the updated team data back to the blob without adding a random suffix
-    await put(`${prefix}${teamName}.json`, JSON.stringify(team), {
+    await put(`${teamName}.json`, JSON.stringify(team), {
       access: "public",
       contentType: "application/json",
       addRandomSuffix: false,

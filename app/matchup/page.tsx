@@ -93,22 +93,25 @@ const MatchupPage = () => {
 
   const fetchOpponentTeams = async () => {
     //TODO- get team from cookie
-    const myTeam = 'Team one';
+    const myTeam = "Team one";
     //---
     console.log("passed myTeam", myTeam);
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/getOpponentTeams/?myTeam=${encodeURIComponent(myTeam)}`,{
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `/api/getOpponentTeams/?myTeam=${encodeURIComponent(myTeam)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data = await response.json();
 
-      if(response.status === 200) setOpponents(data);
+      if (response.status === 200) setOpponents(data);
 
-      if(response.status === 400) {
+      if (response.status === 400) {
         toast({
           title: "Error",
           description: data.error,
@@ -116,8 +119,6 @@ const MatchupPage = () => {
           duration: 3000,
         });
       }
-      
-      
     } catch (error) {
       console.error("Error fetching opponent teams:", error);
     }
@@ -214,6 +215,7 @@ const MatchupPage = () => {
         active: true,
         isEditing: false,
         tempRating: 0,
+        gender: "male",
       });
     }
   };
@@ -1003,6 +1005,7 @@ const MatchupPage = () => {
     active: true,
     isEditing: false,
     tempRating: 0,
+    gender: "male",
   });
 
   // Function to calculate the average rating of a team
