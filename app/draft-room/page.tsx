@@ -491,6 +491,40 @@ export default function DraftRoom() {
     // console.log("Current draft team", currentDraftTeam);
     // console.log("Draft board", draftBoard);
     // console.log("Our available players", ourAvailablePlayers);
+    const suggestPlayer = () => {
+      if (draftBoard.teamB.length === 0) {
+        console.log("Suggesting player to put up");
+        console.log("Our available players", ourAvailablePlayers);
+        // Suggest the best player to put up
+        const sortedPlayers = [...ourAvailablePlayers].sort(
+          (a, b) => b.rating - a.rating
+        );
+        setSuggestedPlayer(sortedPlayers[0]);
+        console.log("Suggested player", sortedPlayers[0]);
+      } else {
+        // Suggest the best matchup for their team
+        console.log("Suggesting best matchup for their team");
+        const lastDraftedOpponentPlayer =
+          draftBoard.teamB[draftBoard.teamB.length - 1];
+        let bestMatch = ourAvailablePlayers[0];
+        let smallestDifference = Math.abs(
+          lastDraftedOpponentPlayer.rating - bestMatch.rating
+        );
+
+        ourAvailablePlayers.forEach((player) => {
+          const difference = Math.abs(
+            lastDraftedOpponentPlayer.rating - player.rating
+          );
+          if (difference < smallestDifference) {
+            bestMatch = player;
+            smallestDifference = difference;
+          }
+        });
+
+        setSuggestedPlayer(bestMatch);
+        console.log("Suggested player", bestMatch);
+      }
+    };
 
     if (currentDraftTeam === "teamA") {
       suggestPlayer();
@@ -505,41 +539,6 @@ export default function DraftRoom() {
     ourAvailablePlayers,
     theirAvailablePlayers,
   ]);
-
-  const suggestPlayer = () => {
-    if (draftBoard.teamB.length === 0) {
-      console.log("Suggesting player to put up");
-      console.log("Our available players", ourAvailablePlayers);
-      // Suggest the best player to put up
-      const sortedPlayers = [...ourAvailablePlayers].sort(
-        (a, b) => b.rating - a.rating
-      );
-      setSuggestedPlayer(sortedPlayers[0]);
-      console.log("Suggested player", sortedPlayers[0]);
-    } else {
-      // Suggest the best matchup for their team
-      console.log("Suggesting best matchup for their team");
-      const lastDraftedOpponentPlayer =
-        draftBoard.teamB[draftBoard.teamB.length - 1];
-      let bestMatch = ourAvailablePlayers[0];
-      let smallestDifference = Math.abs(
-        lastDraftedOpponentPlayer.rating - bestMatch.rating
-      );
-
-      ourAvailablePlayers.forEach((player) => {
-        const difference = Math.abs(
-          lastDraftedOpponentPlayer.rating - player.rating
-        );
-        if (difference < smallestDifference) {
-          bestMatch = player;
-          smallestDifference = difference;
-        }
-      });
-
-      setSuggestedPlayer(bestMatch);
-      console.log("Suggested player", bestMatch);
-    }
-  };
 
   const handleDraftPlayer = (player: Player, team: "teamA" | "teamB") => {
     const updatedDraftBoard = { ...draftBoard };
