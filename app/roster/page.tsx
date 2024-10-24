@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 // -- types
 import { Player } from "../interfaces/Player";
 import { Team } from "../interfaces/Team";
@@ -78,6 +78,7 @@ const RosterPage = () => {
   const [removingPlayers, setRemovingPlayers] = useState<
     Record<string, boolean>
   >({});
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -358,22 +359,78 @@ const RosterPage = () => {
     }
   };
 
-  const handleEdit = (id: number, rating: number) => {
-    setEditingId(id);
+  const handleEdit = (playerRowIndex: number, rating: number) => {
+    setEditingId(playerRowIndex);
     setEditingRating(rating.toString());
+    // Schedule focus for the next render cycle
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
   };
 
-  const handleSave = (editedPlayer: Player) => {
+  const handleSave = async (selectedPlayer: Player) => {
+    // --Check if the rating is a number and is greater or equal than 0
+    if (isNaN(parseInt(editingRating)) || parseInt(editingRating) < 0) {
+      toast({
+        title: "Error",
+        description: "Rating must be a number greater than 0",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
     const updatedPlayersRating = team.players.map((player) =>
-      player.pdgaNumber === editedPlayer.pdgaNumber &&
-      player.name === editedPlayer.name
-        ? { ...player, rating: parseInt(editingRating) || player.rating }
+      player.pdgaNumber === selectedPlayer.pdgaNumber &&
+      player.name === selectedPlayer.name
+        ? { ...player, rating: parseInt(editingRating) }
         : player
     );
 
     setTeam((previous) => ({ ...previous, players: updatedPlayersRating }));
-    //TODO-- save rating on JSON file
     setEditingId(null);
+
+    try {
+      const response = await fetch("/api/updatePlayerRating", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          player: selectedPlayer,
+          teamName: selectedTeam,
+          newPlayerRating: editingRating,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        toast({
+          title: "Success",
+          description: `Player ${selectedPlayer.name} rating updated to ${editingRating}`,
+          variant: "default",
+          duration: 3000,
+        });
+      }
+
+      if (response.status === 400) {
+        toast({
+          title: "Error - Player",
+          description: data.message,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error - Player",
+        description: "Failed to update player rating",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+
+    //==
   };
   return (
     <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
@@ -478,6 +535,9 @@ const RosterPage = () => {
                               {editingId === index ? (
                                 <div className="flex items-center space-x-2">
                                   <Input
+                                    ref={inputRef}
+                                    type="number"
+                                    min="0"
                                     value={editingRating}
                                     onChange={(e) =>
                                       setEditingRating(e.target.value)
