@@ -17,6 +17,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Card,
   CardContent,
   CardFooter,
@@ -33,7 +39,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // -- icons
-import { ChevronDown, Loader2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Edit2,
+  Loader2,
+  RefreshCw,
+  Trash2,
+  X,
+} from "lucide-react";
 // --custom components
 import { paginateArray, Pagination } from "../components/pagination";
 import TeamBadgeStatus from "../components/team-badge-status";
@@ -41,6 +55,7 @@ import TeamBadgeStatus from "../components/team-badge-status";
 // --utils
 import { getMyCookie, hasMyCookie, setMyCookie } from "../utils/manage-cookies";
 import AddPlayerToTeam from "../components/add-player-to-team";
+//import { *asTabsPrimitive } from '@radix-ui/react-tabs';
 
 const RosterPage = () => {
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
@@ -56,6 +71,10 @@ const RosterPage = () => {
     perPage: "8",
     totalCount: 0,
   });
+  // -- edit player rating
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingRating, setEditingRating] = useState<string>("");
+  // -- to remove player from team
   const [removingPlayers, setRemovingPlayers] = useState<
     Record<string, boolean>
   >({});
@@ -339,6 +358,23 @@ const RosterPage = () => {
     }
   };
 
+  const handleEdit = (id: number, rating: number) => {
+    setEditingId(id);
+    setEditingRating(rating.toString());
+  };
+
+  const handleSave = (editedPlayer: Player) => {
+    const updatedPlayersRating = team.players.map((player) =>
+      player.pdgaNumber === editedPlayer.pdgaNumber &&
+      player.name === editedPlayer.name
+        ? { ...player, rating: parseInt(editingRating) || player.rating }
+        : player
+    );
+
+    setTeam((previous) => ({ ...previous, players: updatedPlayersRating }));
+    //TODO-- save rating on JSON file
+    setEditingId(null);
+  };
   return (
     <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -392,65 +428,157 @@ const RosterPage = () => {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="whitespace-nowrap">
-                          Name
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap">
-                          Rating
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap">
-                          PDGA Number
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    {team.players.length === 0 ? (
-                      <TableBody>
+                  <TooltipProvider>
+                    <Table className="table-fixed w-full">
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center pt-10">
-                            <Label className="text-sm">
-                              No players on team
-                            </Label>
+                          <TableHead className="whitespace-nowrap">
+                            Name
+                          </TableHead>
+                          <TableHead className="whitespace-nowrap w-[150px]">
+                            <div className="flex items-center">
+                              Rating
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => {}}
+                                  >
+                                    <RefreshCw className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Recalculate all players ratings</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </TableHead>
+                          <TableHead className="whitespace-nowrap">
+                            PDGA Number
+                          </TableHead>
+                          <TableCell className="whitespace-nowrap">
+                            Class
                           </TableCell>
+                          <TableHead className="whitespace-nowrap">
+                            Membership Status
+                          </TableHead>
+                          <TableHead className="whitespace-nowrapw-[120px]">
+                            Actions
+                          </TableHead>
                         </TableRow>
-                      </TableBody>
-                    ) : (
+                      </TableHeader>
                       <TableBody>
                         {paginatedResults.map((player, index) => (
                           <TableRow key={index}>
                             <TableCell className="whitespace-nowrap">
                               {player.name}
                             </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              {player.rating}
+                            <TableCell className="whitespace-nowrap w-[150px]">
+                              {editingId === index ? (
+                                <div className="flex items-center space-x-2">
+                                  <Input
+                                    value={editingRating}
+                                    onChange={(e) =>
+                                      setEditingRating(e.target.value)
+                                    }
+                                    className="w-16"
+                                  />
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => setEditingId(null)}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Cancel editing</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => handleSave(player)}
+                                      >
+                                        <Check className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Save new rating</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              ) : (
+                                player.rating
+                              )}
                             </TableCell>
                             <TableCell className="whitespace-nowrap">
                               {player.pdgaNumber}
                             </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              {player.class}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              {player.membershipStatus}
+                            </TableCell>
                             <TableCell>
-                              <Button
-                                onClick={() => handleRemovePlayer(player)}
-                                disabled={removingPlayers[player.pdgaNumber]}
-                                variant="destructive"
-                                className="whitespace-nowrap"
-                              >
-                                {removingPlayers[player.pdgaNumber] ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  "Remove"
-                                )}
-                              </Button>
+                              <div className="flex space-x-2">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() =>
+                                        handleEdit(index, player.rating)
+                                      }
+                                    >
+                                      <Edit2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Edit player rating</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => handleRemovePlayer(player)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Remove player</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => {}}
+                                    >
+                                      <RefreshCw className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Recalculate player rating</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
-                    )}
-                  </Table>
+                    </Table>
+                  </TooltipProvider>
                 </div>
               )}
             </CardContent>
