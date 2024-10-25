@@ -67,6 +67,7 @@ const RosterPage = () => {
   const [activeTab, setActiveTab] = useState<string>("team");
   const [teamNames, setTeamNames] = useState<string[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string>("");
+  const [isActionInProgress, setIsActionInProgress] = useState<boolean>(false);
   const [paginationConfig, setPaginationConfig] = useState({
     pageIndex: 0,
     perPage: "8",
@@ -80,6 +81,8 @@ const RosterPage = () => {
     Record<string, boolean>
   >({});
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [showRemovingTooltip, setShowRemovingTooltip] = useState(false);
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -243,6 +246,9 @@ const RosterPage = () => {
 
   const handleRemovePlayer = async (player: Player) => {
     try {
+      setIsActionInProgress(true);
+
+      setShowRemovingTooltip(true);
       // --set the player to be removing
       setRemovingPlayers((prev) => ({ ...prev, [player.pdgaNumber]: true }));
       const response = await fetch("/api/removePlayer", {
@@ -282,7 +288,10 @@ const RosterPage = () => {
         duration: 3000,
       });
     } finally {
+      setIsActionInProgress(false);
       setRemovingPlayers((prev) => ({ ...prev, [player.pdgaNumber]: false }));
+
+      setShowRemovingTooltip(false);
     }
   };
 
@@ -361,7 +370,7 @@ const RosterPage = () => {
   };
 
   // -- it's passing the current rating as a parameter so we can populate the input field with the current rating to be eidted
-  const handleEdit = (playerRowIndex: number, currentRating: number) => {
+  const handleEditRating = (playerRowIndex: number, currentRating: number) => {
     setEditingId(playerRowIndex);
     setEditingRating(currentRating.toString());
     // Schedule focus for the next render cycle
@@ -370,7 +379,7 @@ const RosterPage = () => {
     }, 0);
   };
 
-  const handleSave = async (selectedPlayer: Player) => {
+  const handleSaveNewRating = async (selectedPlayer: Player) => {
     // --Check if the rating is a number and is greater or equal than 0
     if (isNaN(parseInt(editingRating)) || parseInt(editingRating) < 0) {
       toast({
@@ -571,7 +580,9 @@ const RosterPage = () => {
                                         <Button
                                           size="icon"
                                           variant="ghost"
-                                          onClick={() => handleSave(player)}
+                                          onClick={() =>
+                                            handleSaveNewRating(player)
+                                          }
                                         >
                                           <Check className="h-4 w-4" />
                                         </Button>
@@ -602,7 +613,7 @@ const RosterPage = () => {
                                         size="icon"
                                         variant="ghost"
                                         onClick={() =>
-                                          handleEdit(index, player.rating)
+                                          handleEditRating(index, player.rating)
                                         }
                                       >
                                         <Edit2 className="h-4 w-4" />
@@ -612,7 +623,12 @@ const RosterPage = () => {
                                       <p>Edit player rating</p>
                                     </TooltipContent>
                                   </Tooltip>
-                                  <Tooltip>
+                                  <Tooltip
+                                    open={
+                                      showRemovingTooltip &&
+                                      removingPlayers[player.pdgaNumber]
+                                    }
+                                  >
                                     <TooltipTrigger asChild>
                                       <Button
                                         size="icon"
@@ -620,12 +636,25 @@ const RosterPage = () => {
                                         onClick={() =>
                                           handleRemovePlayer(player)
                                         }
+                                        onMouseEnter={() =>
+                                          setShowRemovingTooltip(true)
+                                        }
                                       >
-                                        <Trash2 className="h-4 w-4" />
+                                        {isActionInProgress &&
+                                        removingPlayers[player.pdgaNumber] ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Trash2 className="h-4 w-4" />
+                                        )}
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      <p>Remove player</p>
+                                      <p>
+                                        {isActionInProgress &&
+                                        removingPlayers[player.pdgaNumber]
+                                          ? "Please wait, removing player..."
+                                          : "Remove player"}
+                                      </p>
                                     </TooltipContent>
                                   </Tooltip>
                                   <Tooltip>
