@@ -360,9 +360,10 @@ const RosterPage = () => {
     }
   };
 
-  const handleEdit = (playerRowIndex: number, rating: number) => {
+  // -- it's passing the current rating as a parameter so we can populate the input field with the current rating to be eidted
+  const handleEdit = (playerRowIndex: number, currentRating: number) => {
     setEditingId(playerRowIndex);
-    setEditingRating(rating.toString());
+    setEditingRating(currentRating.toString());
     // Schedule focus for the next render cycle
     setTimeout(() => {
       inputRef.current?.focus();
