@@ -56,7 +56,12 @@ import TeamBadgeStatus from "../components/team-badge-status";
 // --utils
 import { getMyCookie, hasMyCookie, setMyCookie } from "../utils/manage-cookies";
 import AddPlayerToTeam from "../components/add-player-to-team";
-//import { *asTabsPrimitive } from '@radix-ui/react-tabs';
+
+type ShowToolTip = {
+  removePlayer: boolean;
+  editPlayerRating: boolean;
+  recalculatePlayerRating: boolean;
+};
 
 const RosterPage = () => {
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
@@ -76,13 +81,17 @@ const RosterPage = () => {
   // -- edit player rating
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingRating, setEditingRating] = useState<string>("");
-  // -- to remove player from team
-  const [removingPlayers, setRemovingPlayers] = useState<
+  // -- when the user clicks on the
+  const [selectedPlayers, setSelectedPlayers] = useState<
     Record<string, boolean>
   >({});
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [showRemovingTooltip, setShowRemovingTooltip] = useState(false);
+  const [showTooltip, setShowTooltip] = useState<ShowToolTip>({
+    removePlayer: false,
+    editPlayerRating: false,
+    recalculatePlayerRating: false,
+  });
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -248,9 +257,15 @@ const RosterPage = () => {
     try {
       setIsActionInProgress(true);
 
-      setShowRemovingTooltip(true);
+      setShowTooltip((previous) => ({
+        ...previous,
+        removePlayer: true,
+      }));
       // --set the player to be removing
-      setRemovingPlayers((prev) => ({ ...prev, [player.pdgaNumber]: true }));
+      setSelectedPlayers((previous) => ({
+        ...previous,
+        [player.pdgaNumber]: true,
+      }));
       const response = await fetch("/api/removePlayer", {
         method: "POST",
         headers: {
@@ -289,9 +304,15 @@ const RosterPage = () => {
       });
     } finally {
       setIsActionInProgress(false);
-      setRemovingPlayers((prev) => ({ ...prev, [player.pdgaNumber]: false }));
+      setSelectedPlayers((previous) => ({
+        ...previous,
+        [player.pdgaNumber]: false,
+      }));
 
-      setShowRemovingTooltip(false);
+      setShowTooltip((previous) => ({
+        ...previous,
+        removePlayer: false,
+      }));
     }
   };
 
@@ -497,12 +518,7 @@ const RosterPage = () => {
               ) : (
                 <div className="overflow-x-auto">
                   <TooltipProvider>
-                    {paginatedResults.length === 0 ? (
-                      <div className="flex justify-center items-center gap-2">
-                        <GiFrisbee />{" "}
-                        <Label>Please select a team to manage </Label>
-                      </div>
-                    ) : (
+                    {paginatedResults.length > 0 && (
                       <Table className="table-fixed w-full">
                         <TableHeader>
                           <TableRow>
@@ -625,8 +641,8 @@ const RosterPage = () => {
                                   </Tooltip>
                                   <Tooltip
                                     open={
-                                      showRemovingTooltip &&
-                                      removingPlayers[player.pdgaNumber]
+                                      showTooltip.removePlayer &&
+                                      selectedPlayers[player.pdgaNumber]
                                     }
                                   >
                                     <TooltipTrigger asChild>
@@ -637,11 +653,14 @@ const RosterPage = () => {
                                           handleRemovePlayer(player)
                                         }
                                         onMouseEnter={() =>
-                                          setShowRemovingTooltip(true)
+                                          setShowTooltip((previous) => ({
+                                            ...previous,
+                                            removePlayer: true,
+                                          }))
                                         }
                                       >
                                         {isActionInProgress &&
-                                        removingPlayers[player.pdgaNumber] ? (
+                                        selectedPlayers[player.pdgaNumber] ? (
                                           <Loader2 className="h-4 w-4 animate-spin" />
                                         ) : (
                                           <Trash2 className="h-4 w-4" />
@@ -651,7 +670,7 @@ const RosterPage = () => {
                                     <TooltipContent>
                                       <p>
                                         {isActionInProgress &&
-                                        removingPlayers[player.pdgaNumber]
+                                        selectedPlayers[player.pdgaNumber]
                                           ? "Please wait, removing player..."
                                           : "Remove player"}
                                       </p>

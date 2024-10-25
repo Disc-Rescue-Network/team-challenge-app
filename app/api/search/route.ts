@@ -4,7 +4,8 @@ import { checkCache, setCache } from "../utils/cache";
 
 export async function POST(request: Request) {
   try {
-    const { firstName, lastName , pdgaNumber, city, state, country} = await request.json();
+    const { firstName, lastName, pdgaNumber, city, state, country } =
+      await request.json();
 
     console.log(`Searching for player: ${firstName} ${lastName}`);
 
@@ -33,7 +34,14 @@ export async function POST(request: Request) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ firstName, lastName, pdgaNumber, city, state, country }),
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          pdgaNumber,
+          city,
+          state,
+          country,
+        }),
       }
     );
 
