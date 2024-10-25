@@ -631,6 +631,10 @@ const RosterPage = () => {
                                         onClick={() =>
                                           handleEditRating(index, player.rating)
                                         }
+                                        disabled={
+                                          player.pdgaNumber > 0 &&
+                                          player.membershipStatus === "Current"
+                                        }
                                       >
                                         <Edit2 className="h-4 w-4" />
                                       </Button>
