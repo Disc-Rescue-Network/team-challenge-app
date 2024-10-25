@@ -48,6 +48,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { GiFrisbee } from "react-icons/gi";
 // --custom components
 import { paginateArray, Pagination } from "../components/pagination";
 import TeamBadgeStatus from "../components/team-badge-status";
@@ -486,138 +487,21 @@ const RosterPage = () => {
               ) : (
                 <div className="overflow-x-auto">
                   <TooltipProvider>
-                    <Table className="table-fixed w-full">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="whitespace-nowrap">
-                            Name
-                          </TableHead>
-                          <TableHead className="whitespace-nowrap w-[150px]">
-                            <div className="flex items-center">
-                              Rating
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    onClick={() => {}}
-                                  >
-                                    <RefreshCw className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Recalculate all players ratings</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </div>
-                          </TableHead>
-                          <TableHead className="whitespace-nowrap">
-                            PDGA Number
-                          </TableHead>
-                          <TableCell className="whitespace-nowrap">
-                            Class
-                          </TableCell>
-                          <TableHead className="whitespace-nowrap">
-                            Membership Status
-                          </TableHead>
-                          <TableHead className="whitespace-nowrapw-[120px]">
-                            Actions
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {paginatedResults.map((player, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="whitespace-nowrap">
-                              {player.name}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap w-[150px]">
-                              {editingId === index ? (
-                                <div className="flex items-center space-x-2">
-                                  <Input
-                                    ref={inputRef}
-                                    type="number"
-                                    min="0"
-                                    value={editingRating}
-                                    onChange={(e) =>
-                                      setEditingRating(e.target.value)
-                                    }
-                                    className="w-16"
-                                  />
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={() => setEditingId(null)}
-                                      >
-                                        <X className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Cancel editing</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={() => handleSave(player)}
-                                      >
-                                        <Check className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Save new rating</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                              ) : (
-                                player.rating
-                              )}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              {player.pdgaNumber}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              {player.class}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              {player.membershipStatus}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      onClick={() =>
-                                        handleEdit(index, player.rating)
-                                      }
-                                    >
-                                      <Edit2 className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Edit player rating</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      onClick={() => handleRemovePlayer(player)}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Remove player</p>
-                                  </TooltipContent>
-                                </Tooltip>
+                    {paginatedResults.length === 0 ? (
+                      <div className="flex justify-center items-center gap-2">
+                        <GiFrisbee />{" "}
+                        <Label>Please select a team to manage </Label>
+                      </div>
+                    ) : (
+                      <Table className="table-fixed w-full">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="whitespace-nowrap">
+                              Name
+                            </TableHead>
+                            <TableHead className="whitespace-nowrap w-[150px]">
+                              <div className="flex items-center">
+                                Rating
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Button
@@ -629,15 +513,141 @@ const RosterPage = () => {
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>Recalculate player rating</p>
+                                    <p>Recalculate all players ratings</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </div>
+                            </TableHead>
+                            <TableHead className="whitespace-nowrap">
+                              PDGA Number
+                            </TableHead>
+                            <TableCell className="whitespace-nowrap">
+                              Class
                             </TableCell>
+                            <TableHead className="whitespace-nowrap">
+                              Membership Status
+                            </TableHead>
+                            <TableHead className="whitespace-nowrapw-[120px]">
+                              Actions
+                            </TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {paginatedResults.map((player, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="whitespace-nowrap">
+                                {player.name}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap w-[150px]">
+                                {editingId === index ? (
+                                  <div className="flex items-center space-x-2">
+                                    <Input
+                                      ref={inputRef}
+                                      type="number"
+                                      min="0"
+                                      value={editingRating}
+                                      onChange={(e) =>
+                                        setEditingRating(e.target.value)
+                                      }
+                                      className="w-16"
+                                    />
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          onClick={() => setEditingId(null)}
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Cancel editing</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          onClick={() => handleSave(player)}
+                                        >
+                                          <Check className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Save new rating</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </div>
+                                ) : (
+                                  player.rating
+                                )}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {player.pdgaNumber}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {player.class}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {player.membershipStatus}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() =>
+                                          handleEdit(index, player.rating)
+                                        }
+                                      >
+                                        <Edit2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Edit player rating</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() =>
+                                          handleRemovePlayer(player)
+                                        }
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Remove player</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => {}}
+                                      >
+                                        <RefreshCw className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Recalculate player rating</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
                   </TooltipProvider>
                 </div>
               )}
