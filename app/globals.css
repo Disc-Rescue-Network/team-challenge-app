@@ -135,3 +135,19 @@
 .custom-dropdown-content::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/*Hide the spinner buttons in WebKit browsers (Chrome, Safari, newer versions of Edge) using the ::-webkit-inner-spin-button and ::-webkit-outer-spin-button pseudo-elements.
+Set the appearance to textfield for Firefox, which effectively removes the spinner buttons.
+The cn function is typically used in Tailwind CSS projects to conditionally join class names. If you're not using it, you can simply concatenate the classes:
+
+*/
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { cn } from "@/lib/utils";
 // -- types
 import { Player } from "../interfaces/Player";
 import { Team } from "../interfaces/Team";
@@ -602,7 +603,7 @@ const RosterPage = () => {
                                       onChange={(e) =>
                                         setEditingRating(e.target.value)
                                       }
-                                      className="w-20"
+                                      className={cn("w-16", "no-spinner")}
                                     />
                                     <Tooltip>
                                       <TooltipTrigger asChild>
