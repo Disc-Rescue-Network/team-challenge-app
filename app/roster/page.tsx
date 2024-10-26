@@ -72,7 +72,7 @@ const RosterPage = () => {
   const [activeTab, setActiveTab] = useState<string>("team");
   const [teamNames, setTeamNames] = useState<string[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string>("");
-  const [isActionInProgress, setIsActionInProgress] = useState<boolean>(false);
+  const [actionInProgress, setActionInProgress] = useState<string>("");
   const [paginationConfig, setPaginationConfig] = useState({
     pageIndex: 0,
     perPage: "8",
@@ -85,13 +85,11 @@ const RosterPage = () => {
   const [selectedPlayers, setSelectedPlayers] = useState<
     Record<string, boolean>
   >({});
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const [showTooltip, setShowTooltip] = useState<ShowToolTip>({
-    removePlayer: false,
-    editPlayerRating: false,
-    recalculatePlayerRating: false,
-  });
+  const [tooltipContent, setTooltipContent] = useState("Update Rating");
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const keepAlive = async () => {
@@ -255,17 +253,13 @@ const RosterPage = () => {
 
   const handleRemovePlayer = async (player: Player) => {
     try {
-      setIsActionInProgress(true);
-
-      setShowTooltip((previous) => ({
-        ...previous,
-        removePlayer: true,
-      }));
+      setActionInProgress("remove");
       // --set the player to be removing
       setSelectedPlayers((previous) => ({
         ...previous,
         [player.pdgaNumber]: true,
       }));
+
       const response = await fetch("/api/removePlayer", {
         method: "POST",
         headers: {
@@ -303,15 +297,10 @@ const RosterPage = () => {
         duration: 3000,
       });
     } finally {
-      setIsActionInProgress(false);
+      setActionInProgress("");
       setSelectedPlayers((previous) => ({
         ...previous,
         [player.pdgaNumber]: false,
-      }));
-
-      setShowTooltip((previous) => ({
-        ...previous,
-        removePlayer: false,
       }));
     }
   };
@@ -390,10 +379,29 @@ const RosterPage = () => {
     }
   };
 
+  const handleCancelEditRating = (selectedPlayer: Player) => {
+    setEditingId(null);
+    setEditingRating("");
+
+    setSelectedPlayers((previous) => ({
+      ...previous,
+      [selectedPlayer.pdgaNumber]: false,
+    }));
+  };
   // -- it's passing the current rating as a parameter so we can populate the input field with the current rating to be eidted
-  const handleEditRating = (playerRowIndex: number, currentRating: number) => {
+  const handleEditRating = (
+    playerRowIndex: number,
+    currentRating: number,
+    selectedPlayer: Player
+  ) => {
     setEditingId(playerRowIndex);
     setEditingRating(currentRating.toString());
+
+    // --set the player's rating to be edited
+    setSelectedPlayers((previous) => ({
+      ...previous,
+      [selectedPlayer.pdgaNumber]: true,
+    }));
     // Schedule focus for the next render cycle
     setTimeout(() => {
       inputRef.current?.focus();
@@ -411,17 +419,22 @@ const RosterPage = () => {
       });
       return;
     }
-    const updatedPlayersRating = team.players.map((player) =>
-      player.pdgaNumber === selectedPlayer.pdgaNumber &&
-      player.name === selectedPlayer.name
-        ? { ...player, rating: parseInt(editingRating) }
-        : player
-    );
-
-    setTeam((previous) => ({ ...previous, players: updatedPlayersRating }));
-    setEditingId(null);
 
     try {
+      setTooltipContent("Updating player rating...");
+      setIsTooltipOpen(true);
+
+      const updatedPlayersRating = team.players.map((player) =>
+        player.pdgaNumber === selectedPlayer.pdgaNumber &&
+        player.name === selectedPlayer.name
+          ? { ...player, rating: parseInt(editingRating) }
+          : player
+      );
+
+      setTeam((previous) => ({ ...previous, players: updatedPlayersRating }));
+
+      setActionInProgress("edit");
+
       const response = await fetch("/api/updatePlayerRating", {
         method: "PATCH",
         headers: {
@@ -437,12 +450,16 @@ const RosterPage = () => {
       const data = await response.json();
 
       if (response.status === 200) {
-        toast({
-          title: "Success",
-          description: `Player ${selectedPlayer.name} rating updated to ${editingRating}`,
-          variant: "default",
-          duration: 3000,
-        });
+        setTooltipContent(
+          `Player ${selectedPlayer.name} rating updated to ${editingRating}`
+        );
+
+        // toast({
+        //   title: "Success",
+        //   description: `Player ${selectedPlayer.name} rating updated to ${editingRating}`,
+        //   variant: "default",
+        //   duration: 3000,
+        // });
       }
 
       if (response.status === 400) {
@@ -460,9 +477,19 @@ const RosterPage = () => {
         variant: "destructive",
         duration: 3000,
       });
+    } finally {
+      // Delay the execution of these setState calls by 3 seconds
+      setTimeout(() => {
+        setActionInProgress("");
+        setSelectedPlayers((previous) => ({
+          ...previous,
+          [selectedPlayer.pdgaNumber]: false,
+        }));
+        setTooltipContent("Update Player Rating");
+        setIsTooltipOpen(false);
+        setEditingId(null);
+      }, 3000);
     }
-
-    //==
   };
   return (
     <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
@@ -575,14 +602,16 @@ const RosterPage = () => {
                                       onChange={(e) =>
                                         setEditingRating(e.target.value)
                                       }
-                                      className="w-16"
+                                      className="w-20"
                                     />
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <Button
                                           size="icon"
                                           variant="ghost"
-                                          onClick={() => setEditingId(null)}
+                                          onClick={() =>
+                                            handleCancelEditRating(player)
+                                          }
                                         >
                                           <X className="h-4 w-4" />
                                         </Button>
@@ -591,7 +620,10 @@ const RosterPage = () => {
                                         <p>Cancel editing</p>
                                       </TooltipContent>
                                     </Tooltip>
-                                    <Tooltip>
+                                    {/* <Tooltip
+                                      open={isTooltipOpen}
+                                      onOpenChange={setIsTooltipOpen}
+                                    >
                                       <TooltipTrigger asChild>
                                         <Button
                                           size="icon"
@@ -599,14 +631,57 @@ const RosterPage = () => {
                                           onClick={() =>
                                             handleSaveNewRating(player)
                                           }
+                                          className="w-32 h-10"
                                         >
-                                          <Check className="h-4 w-4" />
+                                          {actionInProgress === "edit" ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            <Check className="h-4 w-4" />
+                                          )}
                                         </Button>
                                       </TooltipTrigger>
                                       <TooltipContent>
-                                        <p>Save new rating</p>
+                                        <p>{tooltipContent}</p>
                                       </TooltipContent>
-                                    </Tooltip>
+                                    </Tooltip> */}
+                                    <div className="relative group">
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() =>
+                                          handleSaveNewRating(player)
+                                        }
+                                        disabled={
+                                          actionInProgress === "edit" &&
+                                          selectedPlayers[player.pdgaNumber]
+                                        }
+                                      >
+                                        {actionInProgress === "edit" &&
+                                        selectedPlayers[player.pdgaNumber] ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Check className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                      <div
+                                        className={`
+                                        absolute z-10 bg-gray-800 text-white text-xs rounded p-2 
+                                        bottom-full left-1/2 transform -translate-x-1/2 mb-2 whitespace-nowrap 
+                                        transition-opacity duration-200 pointer-events-none 
+                                        ${
+                                          actionInProgress === "edit" &&
+                                          selectedPlayers[player.pdgaNumber]
+                                            ? "opacity-100"
+                                            : "opacity-0 group-hover:opacity-100"
+                                        }
+                                      `}
+                                      >
+                                        {actionInProgress === "edit" &&
+                                        selectedPlayers[player.pdgaNumber]
+                                          ? "Please wait, updating player rating..."
+                                          : "Update rating"}
+                                      </div>
+                                    </div>
                                   </div>
                                 ) : (
                                   player.rating
@@ -629,7 +704,11 @@ const RosterPage = () => {
                                         size="icon"
                                         variant="ghost"
                                         onClick={() =>
-                                          handleEditRating(index, player.rating)
+                                          handleEditRating(
+                                            index,
+                                            player.rating,
+                                            player
+                                          )
                                         }
                                         disabled={
                                           player.pdgaNumber > 0 &&
@@ -644,10 +723,7 @@ const RosterPage = () => {
                                     </TooltipContent>
                                   </Tooltip>
                                   <Tooltip
-                                    open={
-                                      showTooltip.removePlayer &&
-                                      selectedPlayers[player.pdgaNumber]
-                                    }
+                                    open={selectedPlayers[player.pdgaNumber]}
                                   >
                                     <TooltipTrigger asChild>
                                       <Button
@@ -656,14 +732,8 @@ const RosterPage = () => {
                                         onClick={() =>
                                           handleRemovePlayer(player)
                                         }
-                                        onMouseEnter={() =>
-                                          setShowTooltip((previous) => ({
-                                            ...previous,
-                                            removePlayer: true,
-                                          }))
-                                        }
                                       >
-                                        {isActionInProgress &&
+                                        {actionInProgress === "remove" &&
                                         selectedPlayers[player.pdgaNumber] ? (
                                           <Loader2 className="h-4 w-4 animate-spin" />
                                         ) : (
@@ -673,7 +743,7 @@ const RosterPage = () => {
                                     </TooltipTrigger>
                                     <TooltipContent>
                                       <p>
-                                        {isActionInProgress &&
+                                        {actionInProgress === "remove" &&
                                         selectedPlayers[player.pdgaNumber]
                                           ? "Please wait, removing player..."
                                           : "Remove player"}
