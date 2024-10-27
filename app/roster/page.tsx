@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { twMerge } from "tailwind-merge";
+import { motion, AnimatePresence } from "framer-motion";
 // -- types
 import { Player } from "../interfaces/Player";
 import { Team } from "../interfaces/Team";
@@ -434,7 +436,7 @@ const RosterPage = () => {
 
       setTeam((previous) => ({ ...previous, players: updatedPlayersRating }));
 
-      setActionInProgress("edit");
+      setActionInProgress("updating");
 
       const response = await fetch("/api/updatePlayerRating", {
         method: "PATCH",
@@ -451,16 +453,15 @@ const RosterPage = () => {
       const data = await response.json();
 
       if (response.status === 200) {
+        setSelectedPlayers((previous) => ({
+          ...previous,
+          [selectedPlayer.pdgaNumber]: false,
+        }));
         setTooltipContent(
           `Player ${selectedPlayer.name} rating updated to ${editingRating}`
         );
 
-        // toast({
-        //   title: "Success",
-        //   description: `Player ${selectedPlayer.name} rating updated to ${editingRating}`,
-        //   variant: "default",
-        //   duration: 3000,
-        // });
+        setIsTooltipOpen(true);
       }
 
       if (response.status === 400) {
@@ -481,21 +482,17 @@ const RosterPage = () => {
     } finally {
       // Delay the execution of these setState calls by 3 seconds
       setTimeout(() => {
-        setActionInProgress("");
-        setSelectedPlayers((previous) => ({
-          ...previous,
-          [selectedPlayer.pdgaNumber]: false,
-        }));
         setTooltipContent("Update Player Rating");
         setIsTooltipOpen(false);
         setEditingId(null);
+        setActionInProgress("");
       }, 3000);
     }
   };
   return (
-    <div className="flex flex-1 flex-col h-full gap-4 p-2 lg:p-4 lg:gap-6">
+    <div className="flex h-full flex-1 flex-col gap-4 p-2 lg:gap-6 lg:p-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 m-auto justify-center w-90 max-w-[400px] mb-[10px]">
+        <TabsList className="w-90 m-auto mb-[10px] grid max-w-[400px] grid-cols-3 justify-center">
           <TabsTrigger value="team">Manage Team</TabsTrigger>
           <TabsTrigger value="createTeam">Create Team</TabsTrigger>
           <TabsTrigger value="addPlayer">Add Player</TabsTrigger>
@@ -515,21 +512,21 @@ const RosterPage = () => {
               </CardTitle>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="px-2 gap-1 !mt-0">
+                  <Button variant="outline" className="!mt-0 gap-1 px-2">
                     {selectedTeam || "Select a team"}{" "}
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="custom-dropdown-content overflow-y-auto max-h-[250px]"
+                  className="custom-dropdown-content max-h-[250px] overflow-y-auto"
                 >
                   {teamNames.map((teamName) => (
                     <DropdownMenuCheckboxItem
                       key={teamName}
                       checked={selectedTeam === teamName}
                       onCheckedChange={() => handleTeamSelect(teamName)}
-                      className="w-full py-2 px-4 hover:bg-gray-100 pl-7"
+                      className="w-full px-4 py-2 pl-7 hover:bg-gray-100"
                     >
                       {teamName}
                     </DropdownMenuCheckboxItem>
@@ -539,7 +536,7 @@ const RosterPage = () => {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="flex justify-center items-center">
+                <div className="flex items-center justify-center">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   <Label>Please wait</Label>
                 </div>
@@ -547,13 +544,13 @@ const RosterPage = () => {
                 <div className="overflow-x-auto">
                   <TooltipProvider>
                     {paginatedResults.length > 0 && (
-                      <Table className="table-fixed w-full">
+                      <Table className="w-full table-fixed">
                         <TableHeader>
                           <TableRow>
                             <TableHead className="whitespace-nowrap">
                               Name
                             </TableHead>
-                            <TableHead className="whitespace-nowrap w-[150px]">
+                            <TableHead className="w-[150px] whitespace-nowrap">
                               <div className="flex items-center">
                                 Rating
                                 <Tooltip>
@@ -592,101 +589,87 @@ const RosterPage = () => {
                               <TableCell className="whitespace-nowrap">
                                 {player.name}
                               </TableCell>
-                              <TableCell className="whitespace-nowrap w-[150px]">
-                                {editingId === index ? (
-                                  <div className="flex items-center space-x-2">
-                                    <Input
-                                      ref={inputRef}
-                                      type="number"
-                                      min="0"
-                                      value={editingRating}
-                                      onChange={(e) =>
-                                        setEditingRating(e.target.value)
-                                      }
-                                      className={cn("w-16", "no-spinner")}
-                                    />
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="icon"
-                                          variant="ghost"
-                                          onClick={() =>
-                                            handleCancelEditRating(player)
-                                          }
-                                        >
-                                          <X className="h-4 w-4" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Cancel editing</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                    {/* <Tooltip
-                                      open={isTooltipOpen}
-                                      onOpenChange={setIsTooltipOpen}
+                              <TableCell className="w-[150px] whitespace-nowrap">
+                                <AnimatePresence mode="wait">
+                                  {editingId === index ? (
+                                    <motion.div
+                                      key="editing"
+                                      initial={{ opacity: 0 }}
+                                      animate={{ opacity: 1 }}
+                                      exit={{ opacity: 0 }}
+                                      transition={{ exit: { delay: 0.8 } }}
+                                      className="flex items-center space-x-2"
                                     >
-                                      <TooltipTrigger asChild>
+                                      <Input
+                                        ref={inputRef}
+                                        type="number"
+                                        min="0"
+                                        value={editingRating}
+                                        onChange={(e) =>
+                                          setEditingRating(e.target.value)
+                                        }
+                                        className={cn("w-16", "no-spinner")}
+                                      />
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            onClick={() =>
+                                              handleCancelEditRating(player)
+                                            }
+                                          >
+                                            <X className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Cancel editing</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+
+                                      <div className="group relative">
                                         <Button
                                           size="icon"
                                           variant="ghost"
                                           onClick={() =>
                                             handleSaveNewRating(player)
                                           }
-                                          className="w-32 h-10"
+                                          disabled={
+                                            actionInProgress === "edit" &&
+                                            selectedPlayers[player.pdgaNumber]
+                                          }
                                         >
-                                          {actionInProgress === "edit" ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                          ) : (
-                                            <Check className="h-4 w-4" />
-                                          )}
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>{tooltipContent}</p>
-                                      </TooltipContent>
-                                    </Tooltip> */}
-                                    <div className="relative group">
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={() =>
-                                          handleSaveNewRating(player)
-                                        }
-                                        disabled={
-                                          actionInProgress === "edit" &&
-                                          selectedPlayers[player.pdgaNumber]
-                                        }
-                                      >
-                                        {actionInProgress === "edit" &&
-                                        selectedPlayers[player.pdgaNumber] ? (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
                                           <Check className="h-4 w-4" />
-                                        )}
-                                      </Button>
-                                      <div
-                                        className={`
-                                        absolute z-10 bg-gray-800 text-white text-xs rounded p-2 
-                                        bottom-full left-1/2 transform -translate-x-1/2 mb-2 whitespace-nowrap 
-                                        transition-opacity duration-200 pointer-events-none 
-                                        ${
-                                          actionInProgress === "edit" &&
-                                          selectedPlayers[player.pdgaNumber]
-                                            ? "opacity-100"
-                                            : "opacity-0 group-hover:opacity-100"
-                                        }
-                                      `}
-                                      >
-                                        {actionInProgress === "edit" &&
-                                        selectedPlayers[player.pdgaNumber]
-                                          ? "Please wait, updating player rating..."
-                                          : "Update rating"}
+                                        </Button>
+                                        <div
+                                          className={twMerge(
+                                            "pointer-events-none absolute bottom-full left-1/2 z-10 mb-2",
+                                            "-translate-x-1/2 transform whitespace-nowrap rounded bg-gray-800 p-2 text-xs opacity-80",
+                                            "flex items-center gap-2 text-white transition-opacity duration-200"
+                                          )}
+                                        >
+                                          {actionInProgress === "updating" &&
+                                            selectedPlayers[
+                                              player.pdgaNumber
+                                            ] && (
+                                              <Loader2 className="h-4 w-4 animate-spin" />
+                                            )}{" "}
+                                          {tooltipContent}
+                                        </div>
                                       </div>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  player.rating
-                                )}
+                                    </motion.div>
+                                  ) : (
+                                    <motion.div
+                                      key="display"
+                                      initial={{ opacity: 0 }}
+                                      animate={{ opacity: 1 }}
+                                      exit={{ opacity: 0 }}
+                                      transition={{ exit: { delay: 0.1 } }}
+                                    >
+                                      {player.rating}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
                               </TableCell>
                               <TableCell className="whitespace-nowrap">
                                 {player.pdgaNumber}
@@ -787,7 +770,7 @@ const RosterPage = () => {
         </TabsContent>
 
         <TabsContent value="createTeam">
-          <Card className="w-full mb-4">
+          <Card className="mb-4 w-full">
             <CardHeader>
               <CardTitle>Create Team</CardTitle>
             </CardHeader>
