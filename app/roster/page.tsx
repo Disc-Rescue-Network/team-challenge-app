@@ -99,6 +99,8 @@ const RosterPage = () => {
     recalculatePlayerRating: "Recalculate player rating",
     removePlayer: "Remove player from team",
   });
+  // -- players that were unable to be updated when recalculating all players ratings
+  const [playersNotUpdated, setPlayersNotUpdated] = useState<Player[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -573,8 +575,7 @@ const RosterPage = () => {
         // Update tooltip to show removal confirmation
         setTooltipContent((previous) => ({
           ...previous,
-          recalculatePlayerRating:
-            "Nothing to update. The rating is up to date",
+          recalculatePlayerRating: "The rating is up to date",
         }));
         // Wait 3 seconds before updating the table
         await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -644,6 +645,72 @@ const RosterPage = () => {
         [selectedPlayer.pdgaNumber]: false,
       }));
     }
+  };
+
+  const handleRecalculateAllPlayersRating = async () => {
+    try {
+      // -- first we need to get all the players from the team and update their ratings
+      // -- filter the players that have the membership status "Current"
+      // -- for each player, we need to recalculate their rating
+      // -- update the team state with the new ratings
+      // -- update the tooltip content
+      const playersToRecalculate = team.players.filter(
+        (player) => player.membershipStatus === "Current"
+      );
+
+      let playersUnableToBeUpdated: Player[] = [];
+      let updatedPlayers: Player[] = [];
+
+      for (let player of playersToRecalculate) {
+        const [firstName, lastName] = player.name.split(" ");
+
+        const response = await fetch("/api/search", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            pdgaNumber: player.pdgaNumber,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const fetchedPlayer = data.players[0];
+          if (fetchedPlayer.rating !== player.rating) {
+            // -- the player that is already in our files has properties that the player
+            // -- fetched from the pdga website doesn't have
+            // -- so we need only to update the player's rating
+            const updatedPlayer = {
+              ...player,
+              rating: fetchedPlayer.rating,
+            };
+            updatedPlayers.push(updatedPlayer);
+          }
+        } else {
+          playersUnableToBeUpdated.push(player);
+        }
+      }
+      // -- update the local state with players that were able to update and with the not updated
+      if (playersUnableToBeUpdated.length > 0) {
+        setPlayersNotUpdated(playersUnableToBeUpdated);
+      }
+
+      // -- update the local state of the team with the new player ratings
+      setTeam((previous) => ({
+        ...previous,
+        players: previous.players.map((player) => {
+          const updatedPlayer = updatedPlayers.find(
+            (up) => up.pdgaNumber === player.pdgaNumber
+          );
+          return updatedPlayer || player;
+        }),
+      }));
+      // TODO: update the blob with the new players
+    } catch (error) {}
   };
   return (
     <div className="flex h-full flex-1 flex-col gap-4 p-2 lg:gap-6 lg:p-4">
@@ -906,34 +973,40 @@ const RosterPage = () => {
                                         handleRecalculatePlayerRating(player)
                                       }
                                       disabled={
-                                        actionInProgress === "remove" &&
-                                        selectedPlayers[player.pdgaNumber]
+                                        player.membershipStatus !== "Current" ||
+                                        (actionInProgress === "recalculate" &&
+                                          selectedPlayers[player.pdgaNumber])
                                       }
                                     >
                                       <RefreshCw className="h-4 w-4" />
                                     </Button>
-                                    <div
-                                      className={twMerge(
-                                        "pointer-events-none absolute bottom-full left-1/2 z-10 mb-2",
-                                        "-translate-x-1/2 transform whitespace-nowrap rounded border border-gray-300 bg-white p-2",
-                                        "flex items-center gap-2 text-gray-800 transition-opacity duration-200 group-hover:opacity-100",
-                                        // Add opacity-100 when condition is true, opacity-0 otherwise
-                                        `${
-                                          (actionInProgress === "recalculate" ||
-                                            actionInProgress ===
-                                              "recalculated") &&
-                                          selectedPlayers[player.pdgaNumber]
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        }`
-                                      )}
-                                    >
-                                      {actionInProgress === "recalculate" &&
-                                        selectedPlayers[player.pdgaNumber] && (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                        )}{" "}
-                                      {tooltipContent.recalculatePlayerRating}
-                                    </div>
+                                    {/* Only show the tooltip if the membershipStatus is equal to current */}
+                                    {player.membershipStatus === "Current" && (
+                                      <div
+                                        className={twMerge(
+                                          "pointer-events-none absolute bottom-full left-1/2 z-10 mb-2",
+                                          "-translate-x-1/2 transform whitespace-nowrap rounded border border-gray-300 bg-white p-2",
+                                          "flex items-center gap-2 text-gray-800 transition-opacity duration-200 group-hover:opacity-100",
+                                          `${
+                                            (actionInProgress ===
+                                              "recalculate" ||
+                                              actionInProgress ===
+                                                "recalculated") &&
+                                            selectedPlayers[player.pdgaNumber]
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          }`
+                                        )}
+                                      >
+                                        {actionInProgress === "recalculate" &&
+                                          selectedPlayers[
+                                            player.pdgaNumber
+                                          ] && (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          )}{" "}
+                                        {tooltipContent.recalculatePlayerRating}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </TableCell>
