@@ -66,6 +66,11 @@ type ShowToolTip = {
   recalculatePlayerRating: boolean;
 };
 
+type TooltipContent = {
+  editPlayerRating: string;
+  recalculatePlayerRating: string;
+  removePlayer: string;
+};
 const RosterPage = () => {
   const [team, setTeam] = useState<Team>({ name: "", players: [] });
   const [newTeam, setNewTeam] = useState<Team>({ name: "", players: [] });
@@ -89,7 +94,11 @@ const RosterPage = () => {
     Record<string, boolean>
   >({});
 
-  const [tooltipContent, setTooltipContent] = useState("Update Rating");
+  const [tooltipContent, setTooltipContent] = useState<TooltipContent>({
+    editPlayerRating: "Update Rating",
+    recalculatePlayerRating: "Recalculate player rating",
+    removePlayer: "Remove player from team",
+  });
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -257,10 +266,13 @@ const RosterPage = () => {
   const handleRemovePlayer = async (player: Player) => {
     try {
       setActionInProgress("remove");
-      // --set the player to be removing
       setSelectedPlayers((previous) => ({
         ...previous,
         [player.pdgaNumber]: true,
+      }));
+      setTooltipContent((previous) => ({
+        ...previous,
+        removePlayer: "Removing player from team...",
       }));
 
       const response = await fetch("/api/removePlayer", {
@@ -274,23 +286,35 @@ const RosterPage = () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to remove player");
+      const data = await response.json();
+
+      if (response.status === 200) {
+        setActionInProgress("removed");
+        // Update tooltip to show removal confirmation
+        setTooltipContent((previous) => ({
+          ...previous,
+          removePlayer: `Player ${player.name} removed from ${data.team.name}`,
+        }));
+
+        // Wait 3 seconds before updating the table
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        // Update team and pagination
+        setTeam(data.team);
+        setPaginationConfig((previous) => ({
+          ...previous,
+          totalCount: data.team.players.length,
+        }));
       }
 
-      const data = await response.json();
-      setTeam(data.team);
-      // --update the total count of players on the team after removing a player
-      setPaginationConfig((previous) => ({
-        ...previous,
-        totalCount: data.team.players.length,
-      }));
-      toast({
-        title: "Player removed",
-        description: `Player ${player.name} removed from ${data.team.name}`,
-        variant: "default",
-        duration: 3000,
-      });
+      if (response.status === 400) {
+        toast({
+          title: "Error - Player",
+          description: data.message,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error("Error removing player:", error);
       toast({
@@ -300,6 +324,10 @@ const RosterPage = () => {
         duration: 3000,
       });
     } finally {
+      setTooltipContent((previous) => ({
+        ...previous,
+        removePlayer: "Remove Player from team",
+      }));
       setActionInProgress("");
       setSelectedPlayers((previous) => ({
         ...previous,
@@ -424,8 +452,11 @@ const RosterPage = () => {
     }
 
     try {
-      setTooltipContent("Updating player rating...");
-      setIsTooltipOpen(true);
+      setTooltipContent((previous) => ({
+        ...previous,
+        editPlayerRating: "Updating player rating...",
+      }));
+      // setIsTooltipOpen(true);
 
       const updatedPlayersRating = team.players.map((player) =>
         player.pdgaNumber === selectedPlayer.pdgaNumber &&
@@ -457,11 +488,12 @@ const RosterPage = () => {
           ...previous,
           [selectedPlayer.pdgaNumber]: false,
         }));
-        setTooltipContent(
-          `Player ${selectedPlayer.name} rating updated to ${editingRating}`
-        );
+        setTooltipContent((previous) => ({
+          ...previous,
+          editPlayerRating: `Player ${selectedPlayer.name} rating updated to ${editingRating}`,
+        }));
 
-        setIsTooltipOpen(true);
+        // setIsTooltipOpen(true);
       }
 
       if (response.status === 400) {
@@ -482,8 +514,11 @@ const RosterPage = () => {
     } finally {
       // Delay the execution of these setState calls by 3 seconds
       setTimeout(() => {
-        setTooltipContent("Update Player Rating");
-        setIsTooltipOpen(false);
+        setTooltipContent((previous) => ({
+          ...previous,
+          editPlayerRating: "Update Player Rating",
+        }));
+        //setIsTooltipOpen(false);
         setEditingId(null);
         setActionInProgress("");
       }, 3000);
@@ -655,7 +690,7 @@ const RosterPage = () => {
                                             ] && (
                                               <Loader2 className="h-4 w-4 animate-spin" />
                                             )}{" "}
-                                          {tooltipContent}
+                                          {tooltipContent.editPlayerRating}
                                         </div>
                                       </div>
                                     </motion.div>
@@ -707,34 +742,41 @@ const RosterPage = () => {
                                       <p>Edit player rating</p>
                                     </TooltipContent>
                                   </Tooltip>
-                                  <Tooltip
-                                    open={selectedPlayers[player.pdgaNumber]}
-                                  >
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={() =>
-                                          handleRemovePlayer(player)
-                                        }
-                                      >
-                                        {actionInProgress === "remove" &&
-                                        selectedPlayers[player.pdgaNumber] ? (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                          <Trash2 className="h-4 w-4" />
-                                        )}
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>
-                                        {actionInProgress === "remove" &&
+
+                                  <div className="group relative">
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => handleRemovePlayer(player)}
+                                      disabled={
+                                        actionInProgress === "remove" &&
                                         selectedPlayers[player.pdgaNumber]
-                                          ? "Please wait, removing player..."
-                                          : "Remove player"}
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                      }
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                    <div
+                                      className={twMerge(
+                                        "pointer-events-none absolute bottom-full left-1/2 z-10 mb-2",
+                                        "-translate-x-1/2 transform whitespace-nowrap rounded border border-gray-300 bg-white p-2",
+                                        "flex items-center gap-2 text-gray-800 transition-opacity duration-200 group-hover:opacity-100",
+                                        // Add opacity-100 when condition is true, opacity-0 otherwise
+                                        `${
+                                          (actionInProgress === "remove" ||
+                                            actionInProgress === "removed") &&
+                                          selectedPlayers[player.pdgaNumber]
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        }`
+                                      )}
+                                    >
+                                      {actionInProgress === "remove" &&
+                                        selectedPlayers[player.pdgaNumber] && (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        )}{" "}
+                                      {tooltipContent.removePlayer}
+                                    </div>
+                                  </div>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
