@@ -99,7 +99,6 @@ const RosterPage = () => {
     recalculatePlayerRating: "Recalculate player rating",
     removePlayer: "Remove player from team",
   });
-  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -524,6 +523,128 @@ const RosterPage = () => {
       }, 3000);
     }
   };
+
+  const handleRecalculatePlayerRating = async (selectedPlayer: Player) => {
+    try {
+      const [firstName, lastName] = selectedPlayer.name.split(" ");
+
+      setActionInProgress("recalculate");
+      setSelectedPlayers((previous) => ({
+        ...previous,
+        [selectedPlayer.pdgaNumber]: true,
+      }));
+      setTooltipContent((previous) => ({
+        ...previous,
+        recalculatePlayerRating: "Recalculating player rating...",
+      }));
+
+      const response = await fetch("/api/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          pdgaNumber: selectedPlayer.pdgaNumber,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: "Failed to retrieve player data",
+          variant: "destructive",
+          duration: 3000,
+        });
+
+        return;
+      }
+      console.log("datadata🚩", data);
+
+      const player = data.players[0];
+      console.log("Plyer", player);
+
+      // -- check if the player has the same rating
+      if (player.rating === selectedPlayer.rating) {
+        setActionInProgress("recalculated");
+        // Update tooltip to show removal confirmation
+        setTooltipContent((previous) => ({
+          ...previous,
+          recalculatePlayerRating:
+            "Nothing to update. The rating is up to date",
+        }));
+        // Wait 3 seconds before updating the table
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        return;
+      }
+
+      const updateRatingResponse = await fetch("/api/updatePlayerRating", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          player: selectedPlayer,
+          teamName: selectedTeam,
+          newPlayerRating: player.rating,
+        }),
+      });
+
+      const updateRatingData = await updateRatingResponse.json();
+
+      if (updateRatingResponse.status === 200) {
+        setActionInProgress("recalculated");
+        // Update tooltip to show removal confirmation
+        setTooltipContent((previous) => ({
+          ...previous,
+          recalculatePlayerRating: `Rating updated to ${player.rating}`,
+        }));
+        // Wait 3 seconds before updating the table
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        console.log("Player rating updated");
+        selectedPlayer.rating = player.rating;
+        // -- updating the team state
+        setTeam((previous) => ({
+          ...previous,
+          players: team.players.map((player) =>
+            player.pdgaNumber === selectedPlayer.pdgaNumber
+              ? { ...player, rating: selectedPlayer.rating }
+              : player
+          ),
+        }));
+      }
+
+      if (updateRatingResponse.status === 500) {
+        toast({
+          title: "Error",
+          description: updateRatingData.message,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update player rating",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setTooltipContent((previous) => ({
+        ...previous,
+        recalculatePlayerRating: "Recalculate player rating",
+      }));
+      setActionInProgress("");
+      setSelectedPlayers((previous) => ({
+        ...previous,
+        [selectedPlayer.pdgaNumber]: false,
+      }));
+    }
+  };
   return (
     <div className="flex h-full flex-1 flex-col gap-4 p-2 lg:gap-6 lg:p-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -777,20 +898,43 @@ const RosterPage = () => {
                                       {tooltipContent.removePlayer}
                                     </div>
                                   </div>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={() => {}}
-                                      >
-                                        <RefreshCw className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Recalculate player rating</p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  <div className="group relative">
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() =>
+                                        handleRecalculatePlayerRating(player)
+                                      }
+                                      disabled={
+                                        actionInProgress === "remove" &&
+                                        selectedPlayers[player.pdgaNumber]
+                                      }
+                                    >
+                                      <RefreshCw className="h-4 w-4" />
+                                    </Button>
+                                    <div
+                                      className={twMerge(
+                                        "pointer-events-none absolute bottom-full left-1/2 z-10 mb-2",
+                                        "-translate-x-1/2 transform whitespace-nowrap rounded border border-gray-300 bg-white p-2",
+                                        "flex items-center gap-2 text-gray-800 transition-opacity duration-200 group-hover:opacity-100",
+                                        // Add opacity-100 when condition is true, opacity-0 otherwise
+                                        `${
+                                          (actionInProgress === "recalculate" ||
+                                            actionInProgress ===
+                                              "recalculated") &&
+                                          selectedPlayers[player.pdgaNumber]
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        }`
+                                      )}
+                                    >
+                                      {actionInProgress === "recalculate" &&
+                                        selectedPlayers[player.pdgaNumber] && (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        )}{" "}
+                                      {tooltipContent.recalculatePlayerRating}
+                                    </div>
+                                  </div>
                                 </div>
                               </TableCell>
                             </TableRow>
