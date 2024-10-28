@@ -644,8 +644,9 @@ const RosterPage = () => {
                                         <div
                                           className={twMerge(
                                             "pointer-events-none absolute bottom-full left-1/2 z-10 mb-2",
-                                            "-translate-x-1/2 transform whitespace-nowrap rounded bg-gray-800 p-2 text-xs opacity-80",
-                                            "flex items-center gap-2 text-white transition-opacity duration-200"
+                                            "-translate-x-1/2 transform whitespace-nowrap rounded border border-gray-300 bg-white p-2 opacity-80",
+                                            "flex items-center gap-2 text-gray-800 transition-opacity duration-200 group-hover:opacity-100",
+                                            `${actionInProgress === "updating" ? "opacity-100" : "opacity-0"}`
                                           )}
                                         >
                                           {actionInProgress === "updating" &&
