@@ -61,6 +61,7 @@ export async function POST(request: Request) {
     }
 
     const { players }: { players: Player[] } = await response.json();
+    console.log("Players✅", players, players.length);
     console.log("Transformed data to Player[] format");
 
     // Set active to true and isEditing to false for each player

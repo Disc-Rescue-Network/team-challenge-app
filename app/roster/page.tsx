@@ -43,6 +43,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // -- icons
 import {
+  AlertTriangle,
   Check,
   ChevronDown,
   Edit2,
@@ -59,6 +60,13 @@ import TeamBadgeStatus from "../components/team-badge-status";
 // --utils
 import { getMyCookie, hasMyCookie, setMyCookie } from "../utils/manage-cookies";
 import AddPlayerToTeam from "../components/add-player-to-team";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type ShowToolTip = {
   removePlayer: boolean;
@@ -101,6 +109,11 @@ const RosterPage = () => {
   });
   // -- players that were unable to be updated when recalculating all players ratings
   const [playersNotUpdated, setPlayersNotUpdated] = useState<Player[]>([]);
+
+  // -- dialog for updating all players ratings
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -648,12 +661,12 @@ const RosterPage = () => {
   };
 
   const handleRecalculateAllPlayersRating = async () => {
+    // -- dialog for updating all players ratings
+    setIsOpen(true);
+    setIsLoading(true);
+    setIsComplete(false);
     try {
-      // -- first we need to get all the players from the team and update their ratings
-      // -- filter the players that have the membership status "Current"
-      // -- for each player, we need to recalculate their rating
-      // -- update the team state with the new ratings
-      // -- update the tooltip content
+      // -- first we need to get all the players from the team with the membership status "Current" - only than can be updated
       const playersToRecalculate = team.players.filter(
         (player) => player.membershipStatus === "Current"
       );
@@ -663,7 +676,7 @@ const RosterPage = () => {
 
       for (let player of playersToRecalculate) {
         const [firstName, lastName] = player.name.split(" ");
-
+        console.log("Names", firstName, lastName, player.pdgaNumber);
         const response = await fetch("/api/search", {
           method: "POST",
           headers: {
@@ -679,7 +692,10 @@ const RosterPage = () => {
 
         if (response.ok) {
           const data = await response.json();
+          console.log("DataData🔴", data);
           const fetchedPlayer = data.players[0];
+          console.log("fetchedPlayer🚩", fetchedPlayer);
+          console.log("player🚩", player);
           if (fetchedPlayer.rating !== player.rating) {
             // -- the player that is already in our files has properties that the player
             // -- fetched from the pdga website doesn't have
@@ -700,17 +716,59 @@ const RosterPage = () => {
       }
 
       // -- update the local state of the team with the new player ratings
+      const mergedPlayers = team.players.map((player) => {
+        const updatedPlayer = updatedPlayers.find(
+          (up) => up.pdgaNumber === player.pdgaNumber
+        );
+        return updatedPlayer || player;
+      });
+
       setTeam((previous) => ({
         ...previous,
-        players: previous.players.map((player) => {
-          const updatedPlayer = updatedPlayers.find(
-            (up) => up.pdgaNumber === player.pdgaNumber
-          );
-          return updatedPlayer || player;
-        }),
+        players: mergedPlayers,
       }));
-      // TODO: update the blob with the new players
-    } catch (error) {}
+      // -- update the team on the blob storage
+      const responseUpdateAllPLayers = await fetch("/api/search", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          players: mergedPlayers,
+          teamName: team.name,
+        }),
+      });
+
+      if (responseUpdateAllPLayers.status === 200) {
+        setIsLoading(true);
+        setIsComplete(true);
+        // Wait 3 seconds before close the dialog
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        setIsOpen(false);
+      }
+
+      if (
+        responseUpdateAllPLayers.status === 500 ||
+        responseUpdateAllPLayers.status === 400
+      ) {
+        setIsLoading(false);
+        setIsComplete(true);
+        setIsSuccess(false);
+      }
+    } catch (error) {
+      console.log("Error🚩", error);
+      toast({
+        title: "Error",
+        description: "Failed to update all players ratings",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+      setIsComplete(true);
+      setIsSuccess(false);
+    }
   };
   return (
     <div className="flex h-full flex-1 flex-col gap-4 p-2 lg:gap-6 lg:p-4">
@@ -781,7 +839,9 @@ const RosterPage = () => {
                                     <Button
                                       size="icon"
                                       variant="ghost"
-                                      onClick={() => {}}
+                                      onClick={() =>
+                                        handleRecalculateAllPlayersRating()
+                                      }
                                     >
                                       <RefreshCw className="h-4 w-4" />
                                     </Button>
@@ -1019,6 +1079,41 @@ const RosterPage = () => {
                 </div>
               )}
             </CardContent>
+            {/* Dialog to show the status of updating all players ratings */}
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogContent className="w-[90%] rounded-lg md:w-[100%] lg:w-[100%]">
+                <DialogHeader>
+                  <DialogTitle>Updating all players ratings</DialogTitle>
+                  <DialogDescription className="!mt-1">
+                    This will fetch all the updated ratings from the PDGA page
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-col items-center justify-center p-4">
+                  {isLoading && (
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  )}
+                  {isComplete && isSuccess && (
+                    <Check className="h-8 w-8 text-green-500" />
+                  )}
+                  {isComplete && !isSuccess && (
+                    <>
+                      <h2 className="mb-4 text-lg font-semibold">
+                        The following players were not updated:
+                      </h2>
+                      <AlertTriangle className="mb-4 h-8 w-8 text-yellow-500" />
+                      <ul className="mb-4 list-disc pl-5">
+                        {playersNotUpdated.map((player) => (
+                          <li key={player.pdgaNumber}>{player.name}</li>
+                        ))}
+                      </ul>
+                      <Button onClick={() => setIsOpen(false)} className="mt-2">
+                        Close
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </Card>
           <Pagination
             onPageChange={handlePagination}
