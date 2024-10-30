@@ -183,13 +183,13 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
     }
   }, [activeTab, fetchAllTeams]);
 
-  const mock = () => {
-    const updatedPlayers = team.players.map((player) => ({
-      ...player,
-      rating: 0,
-    }));
-    setTeam((previous) => ({ ...previous, players: updatedPlayers }));
-  };
+  // const mock = () => {
+  //   const updatedPlayers = team.players.map((player) => ({
+  //     ...player,
+  //     rating: 0,
+  //   }));
+  //   setTeam((previous) => ({ ...previous, players: updatedPlayers }));
+  // };
   //-- to set the team on cookie
   const handleBadgeClick = () => {
     const hasCookie = hasMyCookie("myTeam");
