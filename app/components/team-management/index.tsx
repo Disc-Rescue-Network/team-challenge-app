@@ -214,6 +214,10 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
   // -- to select the team from the dropdown
   const handleTeamSelect = async (teamName: string) => {
     setSelectedTeam(teamName);
+    setPaginationConfig((previous) => ({
+      ...previous,
+      totalCount: 0,
+    }));
     // --fetch the latestteam data
     try {
       const response = await fetch(
@@ -479,7 +483,7 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
         }),
       });
       const data = await response.json();
-
+      console.log("response", response);
       if (!response.ok) {
         toast({
           title: "Error",
@@ -698,7 +702,6 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
 
   return (
     <>
-      <Button onClick={mock}>Mock</Button>
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg md:text-2xl lg:text-2xl">
