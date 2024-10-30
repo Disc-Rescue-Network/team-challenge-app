@@ -38,6 +38,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { GiFrisbee } from "react-icons/gi";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -98,7 +99,8 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
   });
   // -- players that were unable to be updated when recalculating all players ratings
   const [playersNotUpdated, setPlayersNotUpdated] = useState<Player[]>([]);
-
+  // -- current player that is being updated - to show on the dialog
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   // -- dialog for updating all players ratings
   const [isOpen, setIsOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -180,6 +182,14 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
       fetchAllTeams();
     }
   }, [activeTab, fetchAllTeams]);
+
+  const mock = () => {
+    const updatedPlayers = team.players.map((player) => ({
+      ...player,
+      rating: 0,
+    }));
+    setTeam((previous) => ({ ...previous, players: updatedPlayers }));
+  };
   //-- to set the team on cookie
   const handleBadgeClick = () => {
     const hasCookie = hasMyCookie("myTeam");
@@ -262,116 +272,7 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
       [selectedPlayer.pdgaNumber]: false,
     }));
   };
-  const handleRecalculateAllPlayersRating = async () => {
-    // -- dialog for updating all players ratings
-    setIsOpen(true);
-    setIsLoading(true);
-    setIsComplete(false);
-    try {
-      // -- first we need to get all the players from the team with the membership status "Current" - only than can be updated
-      const playersToRecalculate = team.players.filter(
-        (player) => player.membershipStatus === "Current"
-      );
 
-      let playersUnableToBeUpdated: Player[] = [];
-      let updatedPlayers: Player[] = [];
-
-      for (let player of playersToRecalculate) {
-        const [firstName, lastName] = player.name.split(" ");
-        console.log("Names", firstName, lastName, player.pdgaNumber);
-        const response = await fetch("/api/search", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            firstName,
-            lastName,
-            pdgaNumber: player.pdgaNumber,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("DataData🔴", data);
-          const fetchedPlayer = data.players[0];
-          console.log("fetchedPlayer🚩", fetchedPlayer);
-          console.log("player🚩", player);
-          if (fetchedPlayer.rating !== player.rating) {
-            // -- the player that is already in our files has properties that the player
-            // -- fetched from the pdga website doesn't have
-            // -- so we need only to update the player's rating
-            const updatedPlayer = {
-              ...player,
-              rating: fetchedPlayer.rating,
-            };
-            updatedPlayers.push(updatedPlayer);
-          }
-        } else {
-          playersUnableToBeUpdated.push(player);
-        }
-      }
-      // -- update the local state with players that were able to update and with the not updated
-      if (playersUnableToBeUpdated.length > 0) {
-        setPlayersNotUpdated(playersUnableToBeUpdated);
-      }
-
-      // -- update the local state of the team with the new player ratings
-      const mergedPlayers = team.players.map((player) => {
-        const updatedPlayer = updatedPlayers.find(
-          (up) => up.pdgaNumber === player.pdgaNumber
-        );
-        return updatedPlayer || player;
-      });
-
-      setTeam((previous) => ({
-        ...previous,
-        players: mergedPlayers,
-      }));
-      // -- update the team on the blob storage
-      const responseUpdateAllPLayers = await fetch("/api/search", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          players: mergedPlayers,
-          teamName: team.name,
-        }),
-      });
-
-      if (responseUpdateAllPLayers.status === 200) {
-        setIsLoading(true);
-        setIsComplete(true);
-        // Wait 3 seconds before close the dialog
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        setIsOpen(false);
-      }
-
-      if (
-        responseUpdateAllPLayers.status === 500 ||
-        responseUpdateAllPLayers.status === 400
-      ) {
-        setIsLoading(false);
-        setIsComplete(true);
-        setIsSuccess(false);
-      }
-    } catch (error) {
-      console.log("Error🚩", error);
-      toast({
-        title: "Error",
-        description: "Failed to update all players ratings",
-        variant: "destructive",
-        duration: 3000,
-      });
-    } finally {
-      setIsLoading(false);
-      setIsComplete(true);
-      setIsSuccess(false);
-    }
-  };
   const handleSaveNewRating = async (selectedPlayer: Player) => {
     // --Check if the rating is a number and is greater or equal than 0
     if (isNaN(parseInt(editingRating)) || parseInt(editingRating) < 0) {
@@ -672,8 +573,132 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
     }
   };
 
+  const handleRecalculateAllPlayersRating = async () => {
+    // -- dialog for updating all players ratings
+    setIsOpen(true);
+    setIsLoading(true);
+    setIsComplete(false);
+    setPlayersNotUpdated([]);
+    setCurrentPlayer(null);
+    setIsSuccess(false);
+    try {
+      // -- first we need to get all the players from the team with the membership status "Current" - only than can be updated
+      const playersToRecalculate = team.players.filter(
+        (player) => player.membershipStatus === "Current"
+      );
+
+      let playersUnableToBeUpdated: Player[] = [];
+      let updatedPlayers: Player[] = [];
+
+      for (let player of playersToRecalculate) {
+        const [firstName, lastName] = player.name.split(" ");
+        console.log("Names", firstName, lastName, player.pdgaNumber);
+        setCurrentPlayer(player);
+        const response = await fetch("/api/search", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            pdgaNumber: player.pdgaNumber,
+          }),
+        });
+
+        if (response.ok) {
+          const { players: searchResults } = await response.json();
+          const pdgaPlayer = searchResults[0];
+
+          if (!pdgaPlayer) {
+            // Player not found in PDGA database
+            playersUnableToBeUpdated.push(player);
+            continue;
+          }
+
+          // Only update if the PDGA rating differs from our stored rating
+          if (pdgaPlayer.rating !== player.rating) {
+            const updatedPlayer = {
+              ...player, // Preserve all existing player properties
+              rating: pdgaPlayer.rating, // Only update the rating
+            };
+            updatedPlayers.push(updatedPlayer);
+          }
+        }
+      }
+      // -- update the local state with players that were able to update and with the not updated
+      if (playersUnableToBeUpdated.length > 0) {
+        setIsSuccess(false);
+        setPlayersNotUpdated(playersUnableToBeUpdated);
+      } else {
+        setIsSuccess(true);
+      }
+
+      // -- update tshe local state of the team with the new player ratings
+      const mergedPlayers = team.players.map((player) => {
+        const updatedPlayer = updatedPlayers.find(
+          (up) => up.pdgaNumber === player.pdgaNumber
+        );
+        return updatedPlayer || player;
+      });
+
+      setTeam((previous) => ({
+        ...previous,
+        players: mergedPlayers,
+      }));
+      // -- update the team on the blob storage
+      const responseUpdateAllPLayers = await fetch(
+        "/api/updateAllPlayersToTeam",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            players: mergedPlayers,
+            teamName: team.name,
+          }),
+        }
+      );
+      setIsLoading(false);
+      setIsComplete(true);
+      setCurrentPlayer(null);
+      console.log("final🤜", playersNotUpdated.length, "status", isSuccess);
+      if (responseUpdateAllPLayers.status === 200) {
+        setIsSuccess(true);
+        // if (playersNotUpdated.length === 0) {
+        //   // Wait 3 seconds before close the dialog
+        //   await new Promise((resolve) => setTimeout(resolve, 3000));
+        //   setIsOpen(false);
+        // }
+      }
+
+      if (
+        responseUpdateAllPLayers.status === 500 ||
+        responseUpdateAllPLayers.status === 400
+      ) {
+        setIsSuccess(false);
+      }
+    } catch (error) {
+      console.log("Error🚩", error);
+      toast({
+        title: "Error",
+        description: "Failed to update all players ratings",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+      setIsComplete(true);
+      setIsSuccess(false);
+    }
+  };
+
   return (
     <>
+      <Button onClick={mock}>Mock</Button>
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg md:text-2xl lg:text-2xl">
@@ -974,32 +999,43 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
             <DialogHeader>
               <DialogTitle>Updating all players ratings</DialogTitle>
               <DialogDescription className="!mt-1">
-                This will fetch all the updated ratings from the PDGA page
+                {currentPlayer && currentPlayer?.name ? (
+                  <span className="flex items-center gap-2">
+                    <span>Searching {currentPlayer.name} ...</span>
+                    <Check className="h-4 w-4 text-green-500" />
+                  </span>
+                ) : null}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col items-center justify-center p-4">
               {isLoading && (
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               )}
-              {isComplete && isSuccess && (
+              {isComplete && playersNotUpdated.length === 0 && (
                 <Check className="h-8 w-8 text-green-500" />
               )}
-              {isComplete && !isSuccess && (
+              {isComplete && playersNotUpdated.length > 0 && (
                 <>
                   <h2 className="mb-4 text-lg font-semibold">
                     The following players were not updated:
                   </h2>
                   <AlertTriangle className="mb-4 h-8 w-8 text-yellow-500" />
-                  <ul className="mb-4 list-disc pl-5">
+                  <ul className="mb-4">
                     {playersNotUpdated.map((player) => (
-                      <li key={player.pdgaNumber}>{player.name}</li>
+                      <li
+                        key={player.pdgaNumber}
+                        className="flex items-center gap-2"
+                      >
+                        <GiFrisbee className="h-4 w-4 text-yellow-500" />
+                        {player.name}
+                      </li>
                     ))}
                   </ul>
-                  <Button onClick={() => setIsOpen(false)} className="mt-2">
-                    Close
-                  </Button>
                 </>
               )}
+              <Button onClick={() => setIsOpen(false)} className="mt-2">
+                Close
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

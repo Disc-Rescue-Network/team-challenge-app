@@ -7,8 +7,6 @@ export async function POST(request: Request) {
     const { firstName, lastName, pdgaNumber, city, state, country } =
       await request.json();
 
-    console.log(`Searching for player: ${firstName} ${lastName}`);
-
     if (!firstName) {
       return NextResponse.json(
         { error: "First name is required" },
@@ -25,7 +23,9 @@ export async function POST(request: Request) {
       console.log("Returning cached data");
       return NextResponse.json({ players: cachedData });
     }
-
+    console.log(
+      `Searching for player: ${firstName} ${lastName}-${pdgaNumber}-${city}-${state}-${country}`
+    );
     console.log("Fetching data from external API");
     const response = await fetch(
       "https://tags-api.discrescuenetwork.com/search_pdga",
