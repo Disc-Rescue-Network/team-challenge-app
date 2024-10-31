@@ -19,10 +19,10 @@ export async function POST(request: Request) {
     ).toLowerCase()}`;
     const cachedData = checkCache(cacheKey);
 
-    if (cachedData) {
-      console.log("Returning cached data");
-      return NextResponse.json({ players: cachedData });
-    }
+    // if (cachedData) {
+    //   console.log("Returning cached data");
+    //   return NextResponse.json({ players: cachedData });
+    // }
     console.log(
       `Searching for player: ${firstName} ${lastName}-${pdgaNumber}-${city}-${state}-${country}`
     );
