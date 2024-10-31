@@ -24,6 +24,8 @@ import {
 import { Player } from "../interfaces/Player";
 import { toast } from "@/components/ui/use-toast";
 import ALL_MATCHES from "../matches.json";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import TeamChallengeBadge from "../components/custom-badge";
 
 type Team = {
   team: string;
@@ -181,130 +183,140 @@ const SchedulePage = () => {
   };
 
   return (
-    <>
-      <div className="flex justify-between items-center">
-        <p>
-          {" "}
-          {selectedTeam && (
-            <TeamBadgeStatus
-              myTeam={myTeam}
-              selectedTeam={selectedTeam}
-              handleBadgeClick={() => {}}
-            />
-          )}
-        </p>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="px-2 gap-1 !mt-0">
-              {selectedTeam || "Select a team"}
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="custom-dropdown-content overflow-y-auto max-h-[250px]"
-          >
-            {teamNames.map((teamName) => (
-              <DropdownMenuCheckboxItem
-                key={teamName}
-                checked={selectedTeam === teamName}
-                onCheckedChange={() => handleTeamSelect(teamName)}
-                className="w-full py-2 px-4 hover:bg-gray-100 pl-7"
-              >
-                {teamName}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <h1>Match Schedule</h1>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Match</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Home/Away</TableHead>
-            <TableHead>Opponent</TableHead>
-            <TableHead>Result</TableHead>
-            <TableHead>Total points</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {teamMatches.length > 0 &&
-            teamMatches.map((match) => (
-              <TableRow
-                key={match.id}
-                className={match.opponent === selectedTeam ? "bg-muted" : ""}
-              >
-                <TableCell className="font-medium">
-                  {match.matchGroup.slice(5)}
-                </TableCell>
-                <TableCell>{match.date || "TBD"}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      match.position === "home" ? "default" : "secondary"
+    <div className="bg-lightgray">
+      <Card className="w-full">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg md:text-2xl lg:text-2xl">
+            <p>
+              {" "}
+              {selectedTeam && (
+                <TeamBadgeStatus
+                  myTeam={myTeam}
+                  selectedTeam={selectedTeam}
+                  handleBadgeClick={() => {}}
+                />
+              )}
+            </p>
+          </CardTitle>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="px-2 gap-1 !mt-0">
+                {selectedTeam || "Select a team"}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="custom-dropdown-content overflow-y-auto max-h-[250px]"
+            >
+              {teamNames.map((teamName) => (
+                <DropdownMenuCheckboxItem
+                  key={teamName}
+                  checked={selectedTeam === teamName}
+                  onCheckedChange={() => handleTeamSelect(teamName)}
+                  className="w-full py-2 px-4 hover:bg-gray-100 pl-7"
+                >
+                  {teamName}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Match #</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Home/Away</TableHead>
+                <TableHead>Opponent</TableHead>
+                <TableHead>Result</TableHead>
+                <TableHead>Total points</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {teamMatches.length > 0 &&
+                teamMatches.map((match) => (
+                  <TableRow
+                    key={match.id}
+                    className={
+                      match.opponent === selectedTeam ? "bg-muted" : ""
                     }
                   >
-                    {match.position === "home" ? (
-                      <Home className="mr-1 h-3 w-3" />
-                    ) : null}
-                    {match.position === "home" ? "Home" : "Away"}
-                  </Badge>
-                </TableCell>
-                <TableCell>{match.opponent}</TableCell>
-                <TableCell>
-                  {match.totalPoints ? (
-                    `${match.teamPoints} - ${match.opponentPoints}`
-                  ) : (
-                    <span className="text-muted-foreground">Not played</span>
-                  )}
-                </TableCell>
-                <TableCell>{match.totalPoints}</TableCell>
-                <TableCell>
-                  {!match.totalPoints && (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Home"
-                        className="w-20"
-                        value={score.home}
-                        onChange={(e) =>
-                          setScore((previous) => ({
-                            ...previous,
-                            home: parseFloat(e.target.value),
-                          }))
+                    <TableCell className="font-medium">
+                      {match.matchGroup.slice(5)}
+                    </TableCell>
+                    <TableCell>{match.date || "TBD"}</TableCell>
+                    <TableCell>
+                      <TeamChallengeBadge text={match.position} />
+                      {/* <Badge
+                        variant={
+                          match.position === "home" ? "default" : "secondary"
                         }
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Away"
-                        className="w-20"
-                        value={score.away}
-                        onChange={(e) =>
-                          setScore((previous) => ({
-                            ...previous,
-                            home: parseFloat(e.target.value),
-                          }))
-                        }
-                        // }
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUpdateMatchPoints(match.id)}
                       >
-                        Save
-                      </Button>
-                    </div>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
-    </>
+                        {match.position === "home" ? (
+                          <Home className="mr-1 h-3 w-3" />
+                        ) : null}
+                        {match.position === "home" ? "Home" : "Away"}
+                      </Badge> */}
+                    </TableCell>
+                    <TableCell>{match.opponent}</TableCell>
+                    <TableCell>
+                      {match.totalPoints ? (
+                        `${match.teamPoints} - ${match.opponentPoints}`
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Not played
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>{match.totalPoints}</TableCell>
+                    <TableCell>
+                      {!match.totalPoints && (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            placeholder="Home"
+                            className="w-20"
+                            value={score.home}
+                            onChange={(e) =>
+                              setScore((previous) => ({
+                                ...previous,
+                                home: parseFloat(e.target.value),
+                              }))
+                            }
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Away"
+                            className="w-20"
+                            value={score.away}
+                            onChange={(e) =>
+                              setScore((previous) => ({
+                                ...previous,
+                                home: parseFloat(e.target.value),
+                              }))
+                            }
+                            // }
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUpdateMatchPoints(match.id)}
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 function extractTeamNames(

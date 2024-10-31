@@ -24,6 +24,7 @@
     "@radix-ui/react-toast": "^1.2.1",
     "@vercel/blob": "^0.23.3",
     "class-variance-authority": "^0.7.0",
+    "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "cookies-next": "^4.3.0",
     "country-state-city": "^3.2.1",
