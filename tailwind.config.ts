@@ -19,6 +19,8 @@ const config = {
     },
     extend: {
       colors: {
+        alternativeBlue: "#7DBBEF",
+        alternativePink: "#ED9BE9",
         lightgray: "#fbfdff", // "#fcfeff", //--#fafcfe --#fbfdff
         bordergray: "#cfd6d",
         border: "hsl(var(--border))",

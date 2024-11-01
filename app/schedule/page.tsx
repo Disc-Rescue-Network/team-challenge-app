@@ -184,6 +184,7 @@ const SchedulePage = () => {
 
   return (
     <div className="bg-lightgray">
+      <h1 className="text-2xl font-bold tracking-tight mb-4">Schedules</h1>
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg md:text-2xl lg:text-2xl">
@@ -247,7 +248,15 @@ const SchedulePage = () => {
                     <TableCell className="font-medium">
                       {match.matchGroup.slice(5)}
                     </TableCell>
-                    <TableCell>{match.date || "TBD"}</TableCell>
+                    <TableCell>
+                      {match.date
+                        ? new Date(match.date).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "TBD"}
+                    </TableCell>
                     <TableCell>
                       <TeamChallengeBadge text={match.position} />
                       {/* <Badge
@@ -264,14 +273,18 @@ const SchedulePage = () => {
                     <TableCell>{match.opponent}</TableCell>
                     <TableCell>
                       {match.totalPoints ? (
-                        `${match.teamPoints} - ${match.opponentPoints}`
+                        <span className="tabular-nums">
+                          {match.teamPoints} - {match.opponentPoints}
+                        </span>
                       ) : (
                         <span className="text-muted-foreground">
                           Not played
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>{match.totalPoints}</TableCell>
+                    <TableCell>
+                      <span className="tabular-nums">{match.totalPoints}</span>
+                    </TableCell>
                     <TableCell>
                       {!match.totalPoints && (
                         <div className="flex items-center gap-2">
