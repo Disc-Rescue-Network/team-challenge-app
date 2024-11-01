@@ -1,0 +1,22 @@
+{
+  "pools": {
+    "poolA": [
+      "Sovi",
+      "Ockie",
+      "Mercer",
+      "Tranquility Trails",
+      "FOD",
+      "Wolf",
+      "Camp Alex"
+    ],
+    "poolB": [
+      "Grove",
+      "Creamery",
+      "Greystone",
+      "Alcyon",
+      "Thompson",
+      "Doc",
+      "Oak Ridge Park"
+    ]
+  }
+}
