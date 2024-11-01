@@ -4,9 +4,8 @@ import { checkCache, setCache } from "../utils/cache";
 
 export async function POST(request: Request) {
   try {
-    const { firstName, lastName , pdgaNumber, city, state, country} = await request.json();
-
-    console.log(`Searching for player: ${firstName} ${lastName}`);
+    const { firstName, lastName, pdgaNumber, city, state, country } =
+      await request.json();
 
     if (!firstName) {
       return NextResponse.json(
@@ -20,11 +19,13 @@ export async function POST(request: Request) {
     ).toLowerCase()}`;
     const cachedData = checkCache(cacheKey);
 
-    if (cachedData) {
-      console.log("Returning cached data");
-      return NextResponse.json({ players: cachedData });
-    }
-
+    // if (cachedData) {
+    //   console.log("Returning cached data");
+    //   return NextResponse.json({ players: cachedData });
+    // }
+    console.log(
+      `Searching for player: ${firstName} ${lastName}-${pdgaNumber}-${city}-${state}-${country}`
+    );
     console.log("Fetching data from external API");
     const response = await fetch(
       "https://tags-api.discrescuenetwork.com/search_pdga",
@@ -33,7 +34,14 @@ export async function POST(request: Request) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ firstName, lastName, pdgaNumber, city, state, country }),
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          pdgaNumber,
+          city,
+          state,
+          country,
+        }),
       }
     );
 
@@ -53,6 +61,7 @@ export async function POST(request: Request) {
     }
 
     const { players }: { players: Player[] } = await response.json();
+    console.log("Players✅", players, players.length);
     console.log("Transformed data to Player[] format");
 
     // Set active to true and isEditing to false for each player
