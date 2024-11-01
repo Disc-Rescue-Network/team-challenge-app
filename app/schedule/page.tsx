@@ -1,5 +1,5 @@
 "use client";
-
+import { FaCalendarDays } from "react-icons/fa6";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,14 @@ import { toast } from "@/components/ui/use-toast";
 import ALL_MATCHES from "../matches.json";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TeamChallengeBadge from "../components/custom-badge";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type Team = {
   team: string;
@@ -182,9 +190,51 @@ const SchedulePage = () => {
     );
   };
 
+  const handleUpdateMatchDate = async (matchId: number, date: Date) => {
+    try {
+      const response = await fetch("/api/updateMatch", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ matchId, date }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update match date");
+      }
+
+      // Update local state
+      setTeamMatches((previous) =>
+        previous.map((match) => {
+          if (match.id === matchId) {
+            return {
+              ...match,
+              date: date.toISOString(),
+            };
+          }
+          return match;
+        })
+      );
+
+      toast({
+        title: "Success",
+        description: "Match date updated successfully",
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update match date",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
   return (
     <div className="bg-lightgray">
-      <h1 className="text-2xl font-bold tracking-tight mb-4">Schedules</h1>
+      <h1 className="mb-4 text-2xl font-bold tracking-tight">Schedules</h1>
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg md:text-2xl lg:text-2xl">
@@ -201,21 +251,21 @@ const SchedulePage = () => {
           </CardTitle>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="px-2 gap-1 !mt-0">
+              <Button variant="outline" className="!mt-0 gap-1 px-2">
                 {selectedTeam || "Select a team"}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="custom-dropdown-content overflow-y-auto max-h-[250px]"
+              className="custom-dropdown-content max-h-[250px] overflow-y-auto"
             >
               {teamNames.map((teamName) => (
                 <DropdownMenuCheckboxItem
                   key={teamName}
                   checked={selectedTeam === teamName}
                   onCheckedChange={() => handleTeamSelect(teamName)}
-                  className="w-full py-2 px-4 hover:bg-gray-100 pl-7"
+                  className="w-full px-4 py-2 pl-7 hover:bg-gray-100"
                 >
                   {teamName}
                 </DropdownMenuCheckboxItem>
@@ -249,13 +299,38 @@ const SchedulePage = () => {
                       {match.matchGroup.slice(5)}
                     </TableCell>
                     <TableCell>
-                      {match.date
-                        ? new Date(match.date).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })
-                        : "TBD"}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            disabled={match.totalPoints > 0}
+                            className={cn(
+                              "w-[240px] justify-start text-left font-normal",
+                              !match.date && "text-muted-foreground"
+                            )}
+                          >
+                            {match.date ? (
+                              format(new Date(match.date), "PPP")
+                            ) : (
+                              <span className="flex items-center gap-2">
+                                <FaCalendarDays /> Pick a date
+                              </span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={
+                              match.date ? new Date(match.date) : undefined
+                            }
+                            onSelect={(date: Date | undefined) =>
+                              date && handleUpdateMatchDate(match.id, date)
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </TableCell>
                     <TableCell>
                       <TeamChallengeBadge text={match.position} />
