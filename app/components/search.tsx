@@ -94,6 +94,7 @@ export const SearchCard = ({
         });
       } else {
         const players: PlayerSearchResult[] = data.players;
+
         onResults(players.sort((a, b) => a.name.localeCompare(b.name)) || []);
       }
     } catch (error) {
