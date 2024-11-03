@@ -718,7 +718,7 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="!mt-0 gap-1 px-2">
-                {selectedTeam || teams[0].name || "Select a Team"}{" "}
+                {selectedTeam || teams[0]?.name || "Select a Team"}{" "}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
