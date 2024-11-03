@@ -11,8 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronDown, Home } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Check, ChevronDown, Edit2, Home, Loader2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { getMyCookie } from "../utils/manage-cookies";
 import TeamBadgeStatus from "../components/team-badge-status";
 import {
@@ -34,6 +34,13 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+import { twMerge } from "tailwind-merge";
 
 type Team = {
   team: string;
@@ -73,6 +80,9 @@ type Score = {
   away: number;
 };
 
+type TooltipContent = {
+  editResult: string;
+};
 const SchedulePage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [myTeam, setMyTeam] = useState<string>("");
@@ -80,7 +90,13 @@ const SchedulePage = () => {
   const [teamNames, setTeamNames] = useState<string[]>([]);
   const [teamMatches, setTeamMatches] = useState<TeamMatch[]>([]);
   const [score, setScore] = useState<Score>({ home: 0, away: 0 });
+  const [rowIndex, setRowIndex] = useState<number | null>(null);
+  const [actionInProgress, setActionInProgress] = useState<string>("");
+  const [tooltipContent, setTooltipContent] = useState<TooltipContent>({
+    editResult: "Update results",
+  });
 
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     //-- get myTeam from cookie
     const myTeam = getMyCookie("myTeam");
@@ -174,7 +190,7 @@ const SchedulePage = () => {
     });
   };
 
-  const handleUpdateMatchPoints = (matchId: number) => {
+  const handleUpdateMatchResults = (matchId: number) => {
     setTeamMatches((previous) =>
       previous.map((match) => {
         if (match.id === matchId) {
@@ -188,6 +204,15 @@ const SchedulePage = () => {
         return match;
       })
     );
+  };
+
+  const handleSetMatchResults = (index: number) => {
+    setActionInProgress("edit");
+    setRowIndex(index); // -- row that is editing
+    // Schedule focus for the next render cycle to the home team input
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
   };
 
   const handleUpdateMatchDate = async (matchId: number, date: Date) => {
@@ -274,134 +299,185 @@ const SchedulePage = () => {
           </DropdownMenu>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Match #</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Home/Away</TableHead>
-                <TableHead>Opponent</TableHead>
-                <TableHead>Result</TableHead>
-                <TableHead>Total points</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {teamMatches.length > 0 &&
-                teamMatches.map((match) => (
-                  <TableRow
-                    key={match.id}
-                    className={
-                      match.opponent === selectedTeam ? "bg-muted" : ""
-                    }
-                  >
-                    <TableCell className="font-medium">
-                      {match.matchGroup.slice(5)}
-                    </TableCell>
-                    <TableCell>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            disabled={match.totalPoints > 0}
-                            className={cn(
-                              "w-[240px] justify-start text-left font-normal",
-                              !match.date && "text-muted-foreground"
-                            )}
-                          >
-                            {match.date ? (
-                              format(new Date(match.date), "PPP")
-                            ) : (
-                              <span className="flex items-center gap-2">
-                                <FaCalendarDays /> Pick a date
-                              </span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={
-                              match.date ? new Date(match.date) : undefined
-                            }
-                            onSelect={(date: Date | undefined) =>
-                              date && handleUpdateMatchDate(match.id, date)
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </TableCell>
-                    <TableCell>
-                      <TeamChallengeBadge text={match.position} />
-                      {/* <Badge
-                        variant={
-                          match.position === "home" ? "default" : "secondary"
-                        }
-                      >
-                        {match.position === "home" ? (
-                          <Home className="mr-1 h-3 w-3" />
-                        ) : null}
-                        {match.position === "home" ? "Home" : "Away"}
-                      </Badge> */}
-                    </TableCell>
-                    <TableCell>{match.opponent}</TableCell>
-                    <TableCell>
-                      {match.totalPoints ? (
+          <TooltipProvider>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Match #</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Home/Away</TableHead>
+                  <TableHead>Opponent</TableHead>
+                  <TableHead>Result</TableHead>
+                  <TableHead>Total points</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {teamMatches.length > 0 &&
+                  teamMatches.map((match, index) => (
+                    <TableRow
+                      key={match.id}
+                      className={
+                        match.opponent === selectedTeam ? "bg-muted" : ""
+                      }
+                    >
+                      <TableCell className="font-medium">
+                        {match.matchGroup.slice(5)}
+                      </TableCell>
+                      <TableCell>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              disabled={match.totalPoints > 0}
+                              className={cn(
+                                "w-[240px] justify-start text-left font-normal",
+                                !match.date && "text-muted-foreground"
+                              )}
+                            >
+                              {match.date ? (
+                                format(new Date(match.date), "PPP")
+                              ) : (
+                                <span className="flex items-center gap-2">
+                                  <FaCalendarDays /> Pick a date
+                                </span>
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={
+                                match.date ? new Date(match.date) : undefined
+                              }
+                              onSelect={(date: Date | undefined) =>
+                                date && handleUpdateMatchDate(match.id, date)
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </TableCell>
+                      <TableCell>
+                        <TeamChallengeBadge text={match.position} />
+                      </TableCell>
+                      <TableCell>{match.opponent}</TableCell>
+                      <TableCell>
+                        {match.totalPoints ? (
+                          <span className="tabular-nums">
+                            {match.teamPoints} - {match.opponentPoints}
+                          </span>
+                        ) : rowIndex && rowIndex === index ? (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              ref={inputRef}
+                              type="number"
+                              placeholder="Home"
+                              min="0"
+                              className={cn("w-16", "no-spinner")}
+                              value={score.home}
+                              onChange={(e) =>
+                                setScore((previous) => ({
+                                  ...previous,
+                                  home: parseFloat(e.target.value),
+                                }))
+                              }
+                            />
+                            <Input
+                              type="number"
+                              min="0"
+                              placeholder="Away"
+                              className={cn("w-16", "no-spinner")}
+                              value={score.away}
+                              onChange={(e) =>
+                                setScore((previous) => ({
+                                  ...previous,
+                                  away: parseFloat(e.target.value),
+                                }))
+                              }
+                              // }
+                            />
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setRowIndex(null);
+                                    setScore({ home: 0, away: 0 });
+                                    setActionInProgress("");
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Cancel editing</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <div className="group relative">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() =>
+                                  handleUpdateMatchResults(match.id)
+                                }
+                                disabled={actionInProgress === "edit"}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <div
+                                className={twMerge(
+                                  "pointer-events-none absolute bottom-full left-1/2 z-10 mb-2",
+                                  "-translate-x-1/2 transform whitespace-nowrap rounded border border-gray-300 bg-white p-2 opacity-80",
+                                  "flex items-center gap-2 text-gray-800 transition-opacity duration-200 group-hover:opacity-100",
+                                  `${actionInProgress === "updating" ? "opacity-100" : "opacity-0"}`
+                                )}
+                              >
+                                {actionInProgress === "updating" &&
+                                  rowIndex &&
+                                  rowIndex === index && (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  )}{" "}
+                                {tooltipContent.editResult}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Not played
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <span className="tabular-nums">
-                          {match.teamPoints} - {match.opponentPoints}
+                          {match.totalPoints}
                         </span>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          Not played
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <span className="tabular-nums">{match.totalPoints}</span>
-                    </TableCell>
-                    <TableCell>
-                      {!match.totalPoints && (
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            placeholder="Home"
-                            className="w-20"
-                            value={score.home}
-                            onChange={(e) =>
-                              setScore((previous) => ({
-                                ...previous,
-                                home: parseFloat(e.target.value),
-                              }))
-                            }
-                          />
-                          <Input
-                            type="number"
-                            placeholder="Away"
-                            className="w-20"
-                            value={score.away}
-                            onChange={(e) =>
-                              setScore((previous) => ({
-                                ...previous,
-                                home: parseFloat(e.target.value),
-                              }))
-                            }
-                            // }
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUpdateMatchPoints(match.id)}
-                          >
-                            Save
-                          </Button>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleSetMatchResults(index)}
+                                disabled={match.totalPoints > 0}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Set the results</p>
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TooltipProvider>
         </CardContent>
       </Card>
     </div>

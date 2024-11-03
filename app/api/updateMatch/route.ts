@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 
+// -- field can be "date" to update the date of the match
+// -- field can be "result" to update the result of the match
 export async function PUT(request: Request) {
   try {
     console.log("Bati");
-    const { matchId, date } = await request.json();
+    const { matchId, date, field, results } = await request.json();
 
     // Read the current matches.json
     const matchesPath = path.join(process.cwd(), "app", "matches.json");
@@ -14,15 +16,17 @@ export async function PUT(request: Request) {
 
     // Update the match date
     let matchFound = false;
-    for (const matchGroup of Object.values(matches.matches)) {
-      for (const match of matchGroup as any[]) {
-        if (match.id === matchId) {
-          match.date = new Date(date).toISOString();
-          matchFound = true;
-          break;
+    if (field === "date") {
+      for (const matchGroup of Object.values(matches.matches)) {
+        for (const match of matchGroup as any[]) {
+          if (match.id === matchId) {
+            match.date = new Date(date).toISOString();
+            matchFound = true;
+            break;
+          }
         }
+        if (matchFound) break;
       }
-      if (matchFound) break;
     }
 
     // Write back to the file

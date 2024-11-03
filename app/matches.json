@@ -558,5 +558,91 @@
         "date": null
       }
     ]
-  }
+  },
+  "totals": [
+    {
+      "team": "FOD",
+      "totalPoints": 34.5,
+      "wins": 1,
+      "losses": 0
+    },
+    {
+      "team": "Wolf",
+      "totalPoints": 20.5,
+      "wins": 0,
+      "losses": 2
+    },
+    {
+      "team": "Greystone",
+      "totalPoints": 40,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Sovi",
+      "totalPoints": 36.5,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Ockie",
+      "totalPoints": 16.5,
+      "wins": 0,
+      "losses": 2
+    },
+    {
+      "team": "Tranquility Trails",
+      "totalPoints": 51.5,
+      "wins": 2,
+      "losses": 0
+    },
+    {
+      "team": "Mercer",
+      "totalPoints": 46.5,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Camp Alex",
+      "totalPoints": 46,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Thompson",
+      "totalPoints": 14,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "team": "Doc",
+      "totalPoints": 26.5,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "team": "Grove",
+      "totalPoints": 10,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "team": "Oak Ridge Park",
+      "totalPoints": 30,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Creamery",
+      "totalPoints": 14,
+      "wins": 0,
+      "losses": 2
+    },
+    {
+      "team": "Alcyon",
+      "totalPoints": 34,
+      "wins": 2,
+      "losses": 0
+    }
+  ]
 }
