@@ -157,6 +157,8 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
             totalCount: updatedSelectedTeam.players.length,
           }));
         }
+      } else {
+        setSelectedTeam(teams[0].name);
       }
       //
       if (response.status === 400) {
@@ -497,7 +499,7 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
       console.log("datadata🚩", data);
 
       const player = data.players[0];
-      console.log("Plyer", player);
+      console.log("Player", player);
 
       // -- check if the player has the same rating
       if (player.rating === selectedPlayer.rating) {
@@ -716,7 +718,7 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="!mt-0 gap-1 px-2">
-                {selectedTeam || "Select a team"}{" "}
+                {selectedTeam || teams[0].name || "Select a Team"}{" "}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
