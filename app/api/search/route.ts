@@ -45,6 +45,8 @@ export async function POST(request: Request) {
       }
     );
 
+    //console.log("response", response);
+
     // const response = await fetch("http://localhost:3001/search_pdga", {
     //   method: "POST",
     //   headers: {
