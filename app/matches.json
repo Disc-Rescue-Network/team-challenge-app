@@ -2,267 +2,647 @@
   "matches": {
     "match1": [
       {
-        "away": { "team": "FOD", "points": 15 },
-        "home": { "team": "Wolf", "points": 13 },
+        "id": 1001,
+        "away": {
+          "team": "FOD",
+          "points": 15
+        },
+        "home": {
+          "team": "Wolf",
+          "points": 13
+        },
         "totalPoints": 28,
         "date": "2024-09-21"
       },
       {
-        "away": { "team": "Greystone", "points": 8 },
-        "home": { "team": "Sovi", "points": 24 },
+        "id": 1002,
+        "away": {
+          "team": "Greystone",
+          "points": 8
+        },
+        "home": {
+          "team": "Sovi",
+          "points": 24
+        },
         "totalPoints": 32,
         "date": "2024-09-22"
       },
       {
-        "away": { "team": "Ockie", "points": 5 },
-        "home": { "team": "Tranquility Trails", "points": 29 },
+        "id": 1003,
+        "away": {
+          "team": "Ockie",
+          "points": 5
+        },
+        "home": {
+          "team": "Tranquility Trails",
+          "points": 29
+        },
         "totalPoints": 34,
         "date": "2024-09-22"
       },
       {
-        "away": { "team": "Mercer", "points": 24.5 },
-        "home": { "team": "Camp Alex", "points": 23.5 },
+        "id": 1004,
+        "away": {
+          "team": "Mercer",
+          "points": 24.5
+        },
+        "home": {
+          "team": "Camp Alex",
+          "points": 23.5
+        },
         "totalPoints": 48,
         "date": "2024-09-29"
       },
       {
-        "away": { "team": "Thompson", "points": 14 },
-        "home": { "team": "Doc", "points": 14 },
+        "id": 1005,
+        "away": {
+          "team": "Thompson",
+          "points": 14
+        },
+        "home": {
+          "team": "Doc",
+          "points": 14
+        },
         "totalPoints": 28,
         "date": "2024-09-15"
       },
       {
-        "away": { "team": "Grove", "points": 10 },
-        "home": { "team": "Oak Ridge Park", "points": 22 },
+        "id": 1006,
+        "away": {
+          "team": "Grove",
+          "points": 10
+        },
+        "home": {
+          "team": "Oak Ridge Park",
+          "points": 22
+        },
         "totalPoints": 32,
         "date": "2024-09-15"
       },
       {
-        "away": { "team": "Creamery", "points": 8 },
-        "home": { "team": "Alcyon", "points": 12 },
+        "id": 1007,
+        "away": {
+          "team": "Creamery",
+          "points": 8
+        },
+        "home": {
+          "team": "Alcyon",
+          "points": 12
+        },
         "totalPoints": 20,
         "date": "2024-09-28"
       }
     ],
     "match2": [
       {
-        "away": { "team": "Creamery", "points": 6 },
-        "home": { "team": "Mercer", "points": 22 },
+        "id": 2001,
+        "away": {
+          "team": "Creamery",
+          "points": 6
+        },
+        "home": {
+          "team": "Mercer",
+          "points": 22
+        },
         "totalPoints": 28,
         "date": "2024-10-20"
       },
       {
-        "away": { "team": "Sovi", "points": 12.5 },
-        "home": { "team": "FOD", "points": 19.5 },
+        "id": 2002,
+        "away": {
+          "team": "Sovi",
+          "points": 12.5
+        },
+        "home": {
+          "team": "FOD",
+          "points": 19.5
+        },
         "totalPoints": 32,
         "date": "2024-10-20"
       },
       {
-        "away": { "team": "Wolf", "points": 7.5 },
-        "home": { "team": "Tranquility Trails", "points": 22.5 },
+        "id": 2003,
+        "away": {
+          "team": "Wolf",
+          "points": 7.5
+        },
+        "home": {
+          "team": "Tranquility Trails",
+          "points": 22.5
+        },
         "totalPoints": 30,
         "date": "2024-10-13"
       },
       {
-        "away": { "team": "Camp Alex", "points": 22.5 },
-        "home": { "team": "Ockie", "points": 11.5 },
+        "id": 2004,
+        "away": {
+          "team": "Camp Alex",
+          "points": 22.5
+        },
+        "home": {
+          "team": "Ockie",
+          "points": 11.5
+        },
         "totalPoints": 34,
         "date": "2024-10-20"
       },
       {
-        "away": { "team": "Oak Ridge Park", "points": 8 },
-        "home": { "team": "Greystone", "points": 32 },
+        "id": 2005,
+        "away": {
+          "team": "Oak Ridge Park",
+          "points": 8
+        },
+        "home": {
+          "team": "Greystone",
+          "points": 32
+        },
         "totalPoints": 40,
         "date": "2024-10-20"
       },
       {
-        "away": { "team": "Thompson", "points": 0 },
-        "home": { "team": "Grove", "points": 0 },
+        "id": 2006,
+        "away": {
+          "team": "Thompson",
+          "points": 0
+        },
+        "home": {
+          "team": "Grove",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Doc", "points": 12.5 },
-        "home": { "team": "Alcyon", "points": 21.5 },
+        "id": 2007,
+        "away": {
+          "team": "Doc",
+          "points": 12.5
+        },
+        "home": {
+          "team": "Alcyon",
+          "points": 21.5
+        },
         "totalPoints": 34,
         "date": "2024-10-26"
       }
     ],
     "match3": [
       {
-        "away": { "team": "Mercer", "points": 0 },
-        "home": { "team": "FOD", "points": 0 },
+        "id": 3001,
+        "away": {
+          "team": "Mercer",
+          "points": 0
+        },
+        "home": {
+          "team": "FOD",
+          "points": 0
+        },
+        "totalPoints": 0,
+        "date": "2024-11-06T03:00:00.000Z"
+      },
+      {
+        "id": 3002,
+        "away": {
+          "team": "Camp Alex",
+          "points": 0
+        },
+        "home": {
+          "team": "Oak Ridge Park",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Camp Alex", "points": 0 },
-        "home": { "team": "Oak Ridge Park", "points": 0 },
+        "id": 3003,
+        "away": {
+          "team": "Ockie",
+          "points": 0
+        },
+        "home": {
+          "team": "Wolf",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Ockie", "points": 0 },
-        "home": { "team": "Wolf", "points": 0 },
+        "id": 3004,
+        "away": {
+          "team": "Tranquility Trails",
+          "points": 0
+        },
+        "home": {
+          "team": "Sovi",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Tranquility Trails", "points": 0 },
-        "home": { "team": "Sovi", "points": 0 },
+        "id": 3005,
+        "away": {
+          "team": "Greystone",
+          "points": 0
+        },
+        "home": {
+          "team": "Thompson",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Greystone", "points": 0 },
-        "home": { "team": "Thompson", "points": 0 },
+        "id": 3006,
+        "away": {
+          "team": "Doc",
+          "points": 0
+        },
+        "home": {
+          "team": "Creamery",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Doc", "points": 0 },
-        "home": { "team": "Creamery", "points": 0 },
-        "totalPoints": 0,
-        "date": null
-      },
-      {
-        "away": { "team": "Alcyon", "points": 0 },
-        "home": { "team": "Grove", "points": 0 },
+        "id": 3007,
+        "away": {
+          "team": "Alcyon",
+          "points": 0
+        },
+        "home": {
+          "team": "Grove",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       }
     ],
     "match4": [
       {
-        "away": { "team": "Thompson", "points": 0 },
-        "home": { "team": "Ockie", "points": 0 },
+        "id": 4001,
+        "away": {
+          "team": "Thompson",
+          "points": 0
+        },
+        "home": {
+          "team": "Ockie",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "FOD", "points": 0 },
-        "home": { "team": "Camp Alex", "points": 0 },
+        "id": 4002,
+        "away": {
+          "team": "FOD",
+          "points": 0
+        },
+        "home": {
+          "team": "Camp Alex",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Wolf", "points": 0 },
-        "home": { "team": "Sovi", "points": 0 },
+        "id": 4003,
+        "away": {
+          "team": "Wolf",
+          "points": 0
+        },
+        "home": {
+          "team": "Sovi",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Tranquility Trails", "points": 0 },
-        "home": { "team": "Mercer", "points": 0 },
+        "id": 4004,
+        "away": {
+          "team": "Tranquility Trails",
+          "points": 0
+        },
+        "home": {
+          "team": "Mercer",
+          "points": 0
+        },
+        "totalPoints": 0,
+        "date": "2024-11-05T03:00:00.000Z"
+      },
+      {
+        "id": 4005,
+        "away": {
+          "team": "Oak Ridge Park",
+          "points": 0
+        },
+        "home": {
+          "team": "Creamery",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Oak Ridge Park", "points": 0 },
-        "home": { "team": "Creamery", "points": 0 },
+        "id": 4006,
+        "away": {
+          "team": "Doc",
+          "points": 0
+        },
+        "home": {
+          "team": "Grove",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Doc", "points": 0 },
-        "home": { "team": "Grove", "points": 0 },
-        "totalPoints": 0,
-        "date": null
-      },
-      {
-        "away": { "team": "Alcyon", "points": 0 },
-        "home": { "team": "Greystone", "points": 0 },
+        "id": 4007,
+        "away": {
+          "team": "Alcyon",
+          "points": 0
+        },
+        "home": {
+          "team": "Greystone",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       }
     ],
     "match5": [
       {
-        "away": { "team": "Camp Alex", "points": 0 },
-        "home": { "team": "Tranquility Trails", "points": 0 },
+        "id": 5001,
+        "away": {
+          "team": "Camp Alex",
+          "points": 0
+        },
+        "home": {
+          "team": "Tranquility Trails",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "FOD", "points": 0 },
-        "home": { "team": "Alcyon", "points": 0 },
+        "id": 5002,
+        "away": {
+          "team": "FOD",
+          "points": 0
+        },
+        "home": {
+          "team": "Alcyon",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Mercer", "points": 0 },
-        "home": { "team": "Wolf", "points": 0 },
+        "id": 5003,
+        "away": {
+          "team": "Mercer",
+          "points": 0
+        },
+        "home": {
+          "team": "Wolf",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Sovi", "points": 0 },
-        "home": { "team": "Ockie", "points": 0 },
+        "id": 5004,
+        "away": {
+          "team": "Sovi",
+          "points": 0
+        },
+        "home": {
+          "team": "Ockie",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Oak Ridge Park", "points": 0 },
-        "home": { "team": "Thompson", "points": 0 },
+        "id": 5005,
+        "away": {
+          "team": "Oak Ridge Park",
+          "points": 0
+        },
+        "home": {
+          "team": "Thompson",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Greystone", "points": 0 },
-        "home": { "team": "Doc", "points": 0 },
+        "id": 5006,
+        "away": {
+          "team": "Greystone",
+          "points": 0
+        },
+        "home": {
+          "team": "Doc",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Grove", "points": 0 },
-        "home": { "team": "Oak Ridge Creamery", "points": 0 },
+        "id": 5007,
+        "away": {
+          "team": "Grove",
+          "points": 0
+        },
+        "home": {
+          "team": "Oak Ridge Creamery",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       }
     ],
     "match6": [
       {
-        "away": { "team": "Wolf", "points": 0 },
-        "home": { "team": "Camp Alex", "points": 0 },
+        "id": 6001,
+        "away": {
+          "team": "Wolf",
+          "points": 0
+        },
+        "home": {
+          "team": "Camp Alex",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Ockie", "points": 0 },
-        "home": { "team": "FOD", "points": 0 },
+        "id": 6002,
+        "away": {
+          "team": "Ockie",
+          "points": 0
+        },
+        "home": {
+          "team": "FOD",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Tranquility Trails", "points": 0 },
-        "home": { "team": "Doc", "points": 0 },
+        "id": 6003,
+        "away": {
+          "team": "Tranquility Trails",
+          "points": 0
+        },
+        "home": {
+          "team": "Doc",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Sovi", "points": 0 },
-        "home": { "team": "Mercer", "points": 0 },
+        "id": 6004,
+        "away": {
+          "team": "Sovi",
+          "points": 0
+        },
+        "home": {
+          "team": "Mercer",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Creamery", "points": 0 },
-        "home": { "team": "Thompson", "points": 0 },
+        "id": 6005,
+        "away": {
+          "team": "Creamery",
+          "points": 0
+        },
+        "home": {
+          "team": "Thompson",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Alcyon", "points": 0 },
-        "home": { "team": "Oak Ridge Park", "points": 0 },
+        "id": 6006,
+        "away": {
+          "team": "Alcyon",
+          "points": 0
+        },
+        "home": {
+          "team": "Oak Ridge Park",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       },
       {
-        "away": { "team": "Grove", "points": 0 },
-        "home": { "team": "Greystone", "points": 0 },
+        "id": 6007,
+        "away": {
+          "team": "Grove",
+          "points": 0
+        },
+        "home": {
+          "team": "Greystone",
+          "points": 0
+        },
         "totalPoints": 0,
         "date": null
       }
     ]
-  }
+  },
+  "totals": [
+    {
+      "team": "FOD",
+      "totalPoints": 34.5,
+      "wins": 1,
+      "losses": 0
+    },
+    {
+      "team": "Wolf",
+      "totalPoints": 20.5,
+      "wins": 0,
+      "losses": 2
+    },
+    {
+      "team": "Greystone",
+      "totalPoints": 40,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Sovi",
+      "totalPoints": 36.5,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Ockie",
+      "totalPoints": 16.5,
+      "wins": 0,
+      "losses": 2
+    },
+    {
+      "team": "Tranquility Trails",
+      "totalPoints": 51.5,
+      "wins": 2,
+      "losses": 0
+    },
+    {
+      "team": "Mercer",
+      "totalPoints": 46.5,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Camp Alex",
+      "totalPoints": 46,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Thompson",
+      "totalPoints": 14,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "team": "Doc",
+      "totalPoints": 26.5,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "team": "Grove",
+      "totalPoints": 10,
+      "wins": 0,
+      "losses": 1
+    },
+    {
+      "team": "Oak Ridge Park",
+      "totalPoints": 30,
+      "wins": 1,
+      "losses": 1
+    },
+    {
+      "team": "Creamery",
+      "totalPoints": 14,
+      "wins": 0,
+      "losses": 2
+    },
+    {
+      "team": "Alcyon",
+      "totalPoints": 34,
+      "wins": 2,
+      "losses": 0
+    }
+  ]
 }
