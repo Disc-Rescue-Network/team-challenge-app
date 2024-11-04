@@ -30,11 +30,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex row-auto w-full h-full bg-lightgray">
+          <div className="row-auto flex h-full w-full">
             <SideMenu />
             <div className="w-full">
               <MenuHeader />
-              <main className="grid grid-cols-1 min-h-screen p-2 lg:p-2 gap-4">
+              <main className="grid min-h-screen grid-cols-1 gap-4 p-2 lg:p-2">
                 <DraftProvider>{children}</DraftProvider>
               </main>
             </div>

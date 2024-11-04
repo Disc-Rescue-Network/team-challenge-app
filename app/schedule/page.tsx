@@ -258,7 +258,7 @@ const SchedulePage = () => {
   };
 
   return (
-    <div className="bg-lightgray">
+    <div>
       <h1 className="mb-4 text-2xl font-bold tracking-tight">Schedules</h1>
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between">
