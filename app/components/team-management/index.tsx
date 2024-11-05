@@ -111,7 +111,10 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
   useEffect(() => {
     //-- get myTeam from cookie
     const myTeam = getMyCookie("myTeam");
-    if (myTeam) setMyTeam(myTeam);
+    if (myTeam) {
+      setMyTeam(myTeam);
+      setSelectedTeam(myTeam);
+    }
   }, []);
 
   const fetchAllTeams = useCallback(async () => {
