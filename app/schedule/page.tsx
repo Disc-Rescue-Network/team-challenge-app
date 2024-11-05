@@ -100,7 +100,10 @@ const SchedulePage = () => {
   useEffect(() => {
     //-- get myTeam from cookie
     const myTeam = getMyCookie("myTeam");
-    if (myTeam) setMyTeam(myTeam);
+    if (myTeam) {
+      setMyTeam(myTeam);
+      handleTeamSelect(myTeam);
+    }
   }, []);
 
   const fetchAllTeams = async () => {
@@ -308,7 +311,6 @@ const SchedulePage = () => {
                   <TableHead>Home/Away</TableHead>
                   <TableHead>Opponent</TableHead>
                   <TableHead>Result</TableHead>
-                  <TableHead>Total points</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -364,9 +366,20 @@ const SchedulePage = () => {
                       <TableCell>{match.opponent}</TableCell>
                       <TableCell>
                         {match.totalPoints ? (
-                          <span className="tabular-nums">
-                            {match.teamPoints} - {match.opponentPoints}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {match.teamPoints > match.opponentPoints ? (
+                              <Badge variant="default" className="bg-green-500">
+                                Win
+                              </Badge>
+                            ) : match.teamPoints < match.opponentPoints ? (
+                              <Badge variant="destructive">Loss</Badge>
+                            ) : (
+                              <Badge variant="default">Draw</Badge>
+                            )}
+                            <span className="tabular-nums">
+                              {match.teamPoints} - {match.opponentPoints}
+                            </span>
+                          </div>
                         ) : rowIndex && rowIndex === index ? (
                           <div className="flex items-center gap-2">
                             <Input
@@ -448,11 +461,6 @@ const SchedulePage = () => {
                             Not played
                           </span>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <span className="tabular-nums">
-                          {match.totalPoints}
-                        </span>
                       </TableCell>
                       <TableCell>
                         <div>
