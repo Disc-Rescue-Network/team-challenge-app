@@ -42,10 +42,13 @@ import { GiFrisbee } from "react-icons/gi";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 // -- custom components
@@ -705,6 +708,96 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
     }
   };
 
+  const [isAdding, setIsAdding] = useState<boolean>(false);
+  const [isRemoving, setIsRemoving] = useState<boolean>(false);
+  const [selectedOpponent, setSelectedOpponent] = useState<Team | null>(null);
+
+  const [manual, setManual] = useState(false);
+  const [manualPlayer, setManualPlayer] = useState<Player>({
+    name: "",
+    pdgaNumber: 0,
+    rating: 0,
+    class: "",
+    city: "",
+    state: "",
+    country: "",
+    membershipStatus: "",
+    active: true,
+    isEditing: false,
+    tempRating: 0,
+    gender: "male",
+  });
+
+  const handleAddPlayer = async (player: Player, isOpponent: boolean) => {
+    try {
+      setIsAdding(true);
+      const response = await fetch("/api/addPlayerToTeam", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          player,
+          teamName: isOpponent ? selectedOpponent?.name : team.name,
+          isOpponent,
+        }),
+      });
+
+      if (response.status === 400) {
+        const data = await response.json();
+        toast({
+          title: "Player already exists",
+          description: data.message,
+          variant: "destructive",
+          duration: 3000,
+        });
+        setIsAdding(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to add player");
+      }
+
+      const data = await response.json();
+      if (isOpponent) {
+        setSelectedOpponent(data.team);
+      } else {
+        setTeam(data.team);
+      }
+      toast({
+        title: "Player added",
+        description: `Player added to ${isOpponent ? "opponent" : "your"} team`,
+        variant: "default",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error adding player:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add player to the team",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsAdding(false);
+      setManualPlayer({
+        name: "",
+        pdgaNumber: 0,
+        rating: 0,
+        class: "",
+        city: "",
+        state: "",
+        country: "",
+        membershipStatus: "",
+        active: true,
+        isEditing: false,
+        tempRating: 0,
+        gender: "male",
+      });
+    }
+  };
+
   return (
     <>
       <Card className="w-full">
@@ -718,6 +811,74 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
               />
             )}
           </CardTitle>
+          <Dialog open={manual} onOpenChange={setManual}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="ml-auto max-w-[250px]">
+                + Manually Add Player
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="flex flex-col gap-4 p-2">
+              <DialogHeader>
+                <DialogTitle>Confirm Player Details</DialogTitle>
+              </DialogHeader>
+              <div className="mt-4 grid grid-cols-1 gap-4">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  type="text"
+                  name="name"
+                  value={manualPlayer.name}
+                  onChange={(e) =>
+                    setManualPlayer({
+                      ...manualPlayer,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="Enter player's name"
+                />
+                <Label htmlFor="pdga">PDGA Number</Label>
+                <Input
+                  type="number"
+                  name="pdga"
+                  value={manualPlayer.pdgaNumber}
+                  onChange={(e) =>
+                    setManualPlayer({
+                      ...manualPlayer,
+                      pdgaNumber: parseInt(e.target.value, 10),
+                    })
+                  }
+                  placeholder="Enter player's PDGA number"
+                />
+                <Label htmlFor="rating">Rating</Label>
+
+                <Input
+                  type="number"
+                  name="rating"
+                  value={manualPlayer.rating}
+                  onChange={(e) =>
+                    setManualPlayer({
+                      ...manualPlayer,
+                      rating: parseInt(e.target.value, 10),
+                    })
+                  }
+                  placeholder="Enter player's rating"
+                />
+              </div>
+              <DialogFooter>
+                <DialogClose>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button onClick={() => handleAddPlayer(manualPlayer, false)}>
+                  Add to Team
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleAddPlayer(manualPlayer, true)}
+                >
+                  Add to Opponent
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="!mt-0 gap-1 px-2">
