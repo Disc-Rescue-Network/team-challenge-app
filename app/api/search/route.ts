@@ -7,16 +7,16 @@ export async function POST(request: Request) {
     const { firstName, lastName, pdgaNumber, city, state, country } =
       await request.json();
 
-    if (!firstName) {
+    if (!firstName && !lastName && !pdgaNumber) {
       return NextResponse.json(
-        { error: "First name is required" },
+        { error: "First name, last name or PDGA Number is required" },
         { status: 400 }
       );
     }
 
     const cacheKey = `${firstName.toLowerCase()}_${(
       lastName || ""
-    ).toLowerCase()}`;
+    ).toLowerCase()}_${pdgaNumber || ""}`;
     const cachedData = checkCache(cacheKey);
 
     if (cachedData) {

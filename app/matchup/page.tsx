@@ -17,11 +17,10 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, Pencil, Save } from "lucide-react";
+import { ChevronDown, Loader2, Pencil, Save } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Team } from "../interfaces/Team";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,12 +29,12 @@ import { useDraft } from "../context/DraftContext";
 import {
   Dialog,
   DialogClose,
+  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { DialogContent, DialogDescription } from "@radix-ui/react-dialog";
 import {
   Select,
   SelectContent,
@@ -44,6 +43,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Player } from "../interfaces/Player";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { getMyCookie } from "../utils/manage-cookies";
 
 const MatchupPage = () => {
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
@@ -71,14 +77,31 @@ const MatchupPage = () => {
 
   useEffect(() => {
     // Fetch the existing team data when the component mounts
-    fetchTeamData();
+    // fetchTeamData();
     fetchOpponentTeams();
   }, []);
 
-  const fetchTeamData = async () => {
+  useEffect(() => {
+    //-- get myTeam from cookie
+    const myTeam = getMyCookie("myTeam");
+    if (myTeam) {
+      fetchTeamData(myTeam);
+    }
+  }, []);
+
+  const fetchTeamData = async (teamName: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/getMyTeam");
+      const response = await fetch(
+        `/api/getTeam/?teamName=${encodeURIComponent(teamName)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       const data = await response.json();
       console.log("Team data:", data);
       if (data.name !== "") {
@@ -87,6 +110,12 @@ const MatchupPage = () => {
       }
     } catch (error) {
       console.error("Error fetching team data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch team data",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
     setIsLoading(false);
   };
@@ -336,8 +365,14 @@ const MatchupPage = () => {
     }
   };
 
-  const handleSelectOpponent = (opponent: Team) => {
-    setSelectedOpponent(opponent);
+  // const handleSelectOpponent = (opponent: Team) => {
+  //   setSelectedOpponent(opponent);
+  // };
+
+  const handleSelectOpponent = (opponent: string) => {
+    setSelectedOpponent(
+      opponents.find((team) => team.name === opponent) || null
+    );
   };
 
   const handleRemoveOpponent = async (opponent: Team) => {
@@ -504,6 +539,7 @@ const MatchupPage = () => {
 
   // Initial sorting by rating DESC on first load
   useEffect(() => {
+    console.log("Team:", team);
     if (team?.players) {
       const sortedTeam = [...team.players].sort((a, b) => b.rating - a.rating);
       setSortedTeamPlayers(sortedTeam);
@@ -764,7 +800,7 @@ const MatchupPage = () => {
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell colSpan={2} className="text-center pt-10">
+              <TableCell colSpan={2} className="pt-10 text-center">
                 <Label className="text-sm">No inactive players</Label>
               </TableCell>
             </TableRow>
@@ -807,7 +843,7 @@ const MatchupPage = () => {
           </div>
 
           {/* Opponent Team Inactive Players */}
-          <div className="flex flex-col mt-4">
+          <div className="mt-4 flex flex-col">
             <h3 className="text-center font-bold">Opponent Team</h3>
             <Table>
               <TableHeader>
@@ -1038,495 +1074,148 @@ const MatchupPage = () => {
   };
 
   return (
-    <div className="flex flex-1 flex-col h-3/5 gap-6 p-2 lg:p-4 lg:gap-6">
-      <Tabs defaultValue="teamBuilder" className="w-full">
-        <TabsList className="grid grid-cols-2 m-auto justify-center w-80 max-w-[400px] mb-[10px]">
-          <TabsTrigger value="teamBuilder">Team Builder</TabsTrigger>
-          <TabsTrigger value="matchupViewer">Matchup Viewer</TabsTrigger>
-        </TabsList>
-        <TabsContent value="teamBuilder" className="grid grid-cols-1 gap-6">
-          {hasTeam ? (
-            <Card className="">
-              <CardHeader>
-                <CardTitle>{team.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>PDGA Number</TableHead>
-                      <TableHead>Rating</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  {team.players.length === 0 ? (
-                    <TableBody>
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center pt-10">
-                          {isLoading ? (
-                            <Loader2 size="32" />
-                          ) : (
-                            <Label className="text-sm">
-                              No players on team
-                            </Label>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  ) : (
-                    <TableBody>
-                      {team.players.map((player: Player, index: number) => (
-                        <TableRow key={index}>
-                          <TableCell>{player.name}</TableCell>
-                          <TableCell>{player.pdgaNumber}</TableCell>
-                          <TableCell>{player.rating}</TableCell>
-                          <TableCell>
-                            <Button
-                              onClick={() => handleRemovePlayer(player, false)}
-                              disabled={isRemoving}
-                              variant="destructive"
-                            >
-                              {isRemoving ? <Loader2 /> : "Remove"}
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  )}
-                </Table>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="">
-              <CardHeader>
-                <CardTitle>No Team Found</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Label className="text-sm">
-                  Create a team in &quot;My Roster&quot; to view matchups.
-                </Label>
-              </CardContent>
-            </Card>
-          )}
+    <div className="flex h-3/5 flex-1 flex-col gap-6 p-2 lg:gap-6 lg:p-4">
+      <Card className="">
+        <CardHeader className="grid grid-cols-1 gap-4">
+          <CardTitle>
+            <div className="flex flex-row items-center justify-start gap-4">
+              <Label className="text-lg font-bold">Matchup vs. </Label>
+              <Select
+                value={selectedOpponent?.name || ""}
+                onValueChange={handleSelectOpponent}
+              >
+                <SelectTrigger className="w-[280px]">
+                  <SelectValue placeholder="Select an opponent" />
+                </SelectTrigger>
+                <SelectContent>
+                  {opponents.map((opponent, index) => (
+                    <SelectItem key={index} value={opponent.name}>
+                      {opponent.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardTitle>
 
-          <Tabs defaultValue="selectTeam" className="w-full">
-            <TabsList className="grid grid-cols-2 m-auto justify-center w-full max-w-[400px] mb-[10px] ">
-              <TabsTrigger value="selectTeam">Select Opponent</TabsTrigger>
-              <TabsTrigger value="createTeam">Create Opponent</TabsTrigger>
-            </TabsList>
-            <TabsContent value="selectTeam" className="w-full">
-              {opponents.length > 0 && (
-                <Card className="mr-0">
-                  <CardHeader>
-                    <CardTitle>Select Opponent Team</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {opponents.map((opponent, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{opponent.name}</TableCell>
-                            <TableCell className="flex flex-row gap-4 max-w-[200px]">
-                              <Button
-                                onClick={() => handleSelectOpponent(opponent)}
-                                disabled={selectedOpponent === opponent}
-                              >
-                                Select
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                onClick={() => handleRemoveOpponent(opponent)}
-                              >
-                                Remove
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-            <TabsContent value="createTeam" className="w-full">
-              <Card className="">
-                <CardHeader>
-                  <CardTitle>Create Opponent Team</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Input
-                    type="text"
-                    value={createOpponentTeam}
-                    onChange={(e) => setCreateOpponentTeam(e.target.value)}
-                    placeholder="Enter opponent team name"
-                  />
-                </CardContent>
-                <CardFooter className="border-t px-6 py-4">
-                  <Button
-                    onClick={handleCreateOpponentTeam}
-                    disabled={isCreating}
-                  >
-                    {isCreating ? <Loader2 /> : "Create Team"}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-          </Tabs>
-
-          {selectedOpponent && (
-            <Card className="">
-              <CardHeader className="relative">
-                <CardTitle>{selectedOpponent.name}</CardTitle>
-                <Dialog open={manual} onOpenChange={setManual}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" className="ml-auto max-w-[250px]">
-                      + Manually Add Player
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="p-2 flex flex-col gap-4">
-                    <DialogHeader>
-                      <DialogTitle>Confirm Player Details</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid grid-cols-1 gap-4 mt-4">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        type="text"
-                        name="name"
-                        value={manualPlayer.name}
-                        onChange={(e) =>
-                          setManualPlayer({
-                            ...manualPlayer,
-                            name: e.target.value,
-                          })
-                        }
-                        placeholder="Enter player's name"
-                      />
-                      <Label htmlFor="pdga">PDGA Number</Label>
-                      <Input
-                        type="number"
-                        name="pdga"
-                        value={manualPlayer.pdgaNumber}
-                        onChange={(e) =>
-                          setManualPlayer({
-                            ...manualPlayer,
-                            pdgaNumber: parseInt(e.target.value, 10),
-                          })
-                        }
-                        placeholder="Enter player's PDGA number"
-                      />
-                      <Label htmlFor="rating">Rating</Label>
-
-                      <Input
-                        type="number"
-                        name="rating"
-                        value={manualPlayer.rating}
-                        onChange={(e) =>
-                          setManualPlayer({
-                            ...manualPlayer,
-                            rating: parseInt(e.target.value, 10),
-                          })
-                        }
-                        placeholder="Enter player's rating"
-                      />
-                    </div>
-                    <DialogFooter>
-                      <DialogClose>
-                        <Button variant="outline">Cancel</Button>
-                      </DialogClose>
-                      <Button
-                        onClick={() => handleAddPlayer(manualPlayer, false)}
-                      >
-                        Add to Team
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={() => handleAddPlayer(manualPlayer, true)}
-                      >
-                        Add to Opponent
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>PDGA Number</TableHead>
-                      <TableHead>Rating</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  {selectedOpponent.players.length === 0 ? (
-                    <TableBody>
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center pt-10">
-                          {isLoading ? (
-                            <Loader2 size="32" />
-                          ) : (
-                            <Label className="text-sm">
-                              No players on opponent team
-                            </Label>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  ) : (
-                    <TableBody>
-                      {selectedOpponent.players.map((player, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{player.name}</TableCell>
-                          <TableCell>{player.pdgaNumber}</TableCell>
-                          <TableCell>{player.rating}</TableCell>
-                          <TableCell>
-                            <Button
-                              onClick={() => handleRemovePlayer(player, true)}
-                              disabled={isRemoving}
-                              variant="destructive"
-                            >
-                              {isRemoving ? <Loader2 /> : "Remove"}
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  )}
-                </Table>
-              </CardContent>
-            </Card>
+          {team && selectedOpponent && (
+            <div className="grid grid-cols-3 gap-4 rounded-lg bg-muted p-4">
+              <div className="text-center">
+                <div className="mb-1 text-sm font-medium text-muted-foreground">
+                  Teebird Average
+                </div>
+                <div className="text-2xl font-bold">
+                  {calculateTeamAvg(team)}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="mb-1 text-sm font-medium text-muted-foreground">
+                  Opponent Average
+                </div>
+                <div className="text-2xl font-bold">
+                  {calculateTeamAvg(selectedOpponent)}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="mb-1 text-sm font-medium text-muted-foreground">
+                  Difference
+                </div>
+                <div
+                  className={`text-2xl font-bold ${
+                    calculateDifference(team, selectedOpponent) >= 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {calculateDifference(team, selectedOpponent) > 0 ? "+" : ""}
+                  {calculateDifference(team, selectedOpponent)}
+                </div>
+              </div>
+            </div>
           )}
 
           {selectedOpponent && (
+            <CardDescription>
+              <Button variant="secondary" onClick={goToDraftRoom}>
+                Enter Draft Room
+              </Button>
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 gap-8">
+          {!team && (
+            <Label>
+              Please create your team in "roster builder", set it as your team
+              and then come back to this page.
+            </Label>
+          )}
+          {team && selectedOpponent && (
             <>
-              <Card className="">
-                <CardHeader>
-                  <CardTitle>Player Search</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter player's name"
-                  />
-                </CardContent>
-                <CardFooter className="border-t px-6 py-4">
-                  <Button onClick={handleSearch}>
-                    {isSearching ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        <Label>Please wait</Label>
-                      </>
-                    ) : (
-                      "Search"
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Actions</TableHead>
+                    <TableHead>Teebird</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead>-</TableHead>
+                    <TableHead>Opp. Rating</TableHead>
+                    <TableHead>Opp. Player</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>{renderMatchups()}</TableBody>
+              </Table>
 
-              <Card className="">
+              <Card className="mt-4">
                 <CardHeader>
-                  <CardTitle>Search Results</CardTitle>
+                  <CardTitle>Inactive Players</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>PDGA Number</TableHead>
-                        <TableHead>Rating</TableHead>
-                        <TableHead>Class</TableHead>
-                        <TableHead>City</TableHead>
-                        <TableHead>State</TableHead>
-                        <TableHead>Country</TableHead>
-                        <TableHead>Membership Status</TableHead>
-                        <TableHead>Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    {!results || results.length === 0 ? (
-                      <TableBody>
-                        <TableRow>
-                          <TableCell colSpan={9} className="text-center pt-10">
-                            {isSearching ? (
-                              <Loader2 size="32" className="animate-spin" />
-                            ) : (
-                              <Label className="text-sm">
-                                No results found
-                              </Label>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    ) : (
-                      <TableBody>
-                        {results.map((player, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{player.name}</TableCell>
-                            <TableCell>{player.pdgaNumber}</TableCell>
-                            <TableCell>{player.rating}</TableCell>
-                            <TableCell>{player.class}</TableCell>
-                            <TableCell>{player.city}</TableCell>
-                            <TableCell>{player.state}</TableCell>
-                            <TableCell>{player.country}</TableCell>
-                            <TableCell>{player.membershipStatus}</TableCell>
-                            <TableCell className="grid grid-cols-1 gap-4 min-w-[180px]">
-                              <Button
-                                onClick={() => handleAddPlayer(player, false)}
-                                disabled={isAdding}
-                              >
-                                {isAdding ? <Loader2 /> : "Add to Team"}
-                              </Button>
-                              <Button
-                                onClick={() => handleAddPlayer(player, true)}
-                                disabled={isAdding}
-                                variant="destructive"
-                              >
-                                {isAdding ? <Loader2 /> : "Add to Opponent"}
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    )}
-                  </Table>
-                </CardContent>
+                <CardContent>{renderInactivePlayers()}</CardContent>
               </Card>
             </>
           )}
-        </TabsContent>
-        <TabsContent value="matchupViewer" className="w-full">
-          <Card className="">
-            <CardHeader className="grid grid-cols-1 gap-4">
-              <CardTitle>Matchup Viewer</CardTitle>
-              {team && selectedOpponent && (
-                <div className="grid grid-cols-3 gap-4 bg-muted p-4 rounded-lg">
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">
-                      Teebird Average
-                    </div>
-                    <div className="text-2xl font-bold">
-                      {calculateTeamAvg(team)}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">
-                      Opponent Average
-                    </div>
-                    <div className="text-2xl font-bold">
-                      {calculateTeamAvg(selectedOpponent)}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">
-                      Difference
-                    </div>
-                    <div
-                      className={`text-2xl font-bold ${
-                        calculateDifference(team, selectedOpponent) >= 0
-                          ? "text-green-500"
-                          : "text-red-500"
-                      }`}
-                    >
-                      {calculateDifference(team, selectedOpponent) > 0
-                        ? "+"
-                        : ""}
-                      {calculateDifference(team, selectedOpponent)}
-                    </div>
-                  </div>
-                </div>
-              )}
-              {selectedOpponent && (
-                <CardDescription>
-                  <Button variant="secondary" onClick={goToDraftRoom}>
-                    Enter Draft Room
-                  </Button>
-                </CardDescription>
-              )}
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-8">
-              {(!team || !selectedOpponent) && (
-                <Label>
-                  Please create your team and select an opponent team in the
-                  &quot;My Roster&quot; tab.
-                </Label>
-              )}
-              {team && selectedOpponent && (
-                <>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Actions</TableHead>
-                        <TableHead>Teebird</TableHead>
-                        <TableHead>Rating</TableHead>
-                        <TableHead>-</TableHead>
-                        <TableHead>Opp. Rating</TableHead>
-                        <TableHead>Opp. Player</TableHead>
-                        <TableHead>Action</TableHead>
+          {/* {!selectedOpponent && opponents.length > 0 && (
+            <Card className="ml-0 border-none pl-0">
+              <CardHeader className="ml-0 border-none pl-0">
+                <CardTitle>Select Opponent Team</CardTitle>
+              </CardHeader>
+              <CardContent className="ml-0 border-none pl-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {opponents.map((opponent, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="min-w-fit">
+                          {opponent.name}
+                        </TableCell>
+                        <TableCell className="flex max-w-[200px] flex-row gap-4">
+                          <Button
+                            onClick={() => handleSelectOpponent(opponent.name)}
+                            disabled={selectedOpponent === opponent}
+                          >
+                            Select
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => handleRemoveOpponent(opponent)}
+                          >
+                            Remove
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>{renderMatchups()}</TableBody>
-                  </Table>
-
-                  <Card className=" mt-4">
-                    <CardHeader>
-                      <CardTitle>Inactive Players</CardTitle>
-                    </CardHeader>
-                    <CardContent>{renderInactivePlayers()}</CardContent>
-                  </Card>
-                </>
-              )}
-              {!selectedOpponent && opponents.length > 0 && (
-                <Card className="border-none ml-0 pl-0">
-                  <CardHeader className="border-none ml-0 pl-0">
-                    <CardTitle>Select Opponent Team</CardTitle>
-                  </CardHeader>
-                  <CardContent className="border-none ml-0 pl-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {opponents.map((opponent, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="min-w-fit">
-                              {opponent.name}
-                            </TableCell>
-                            <TableCell className="flex flex-row gap-4 max-w-[200px]">
-                              <Button
-                                onClick={() => handleSelectOpponent(opponent)}
-                                disabled={selectedOpponent === opponent}
-                              >
-                                Select
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                onClick={() => handleRemoveOpponent(opponent)}
-                              >
-                                Remove
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )} */}
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -13,10 +13,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "No teams found" });
     }
 
-    // Fetch team data from each blob URL with default caching
+    // Fetch team data from each blob URL with cache bursting
     const allTeams = await Promise.all(
       blobs.map(async (blob) => {
-        const response = await fetch(blob.url, { cache: "force-cache" });
+        const response = await fetch(`${blob.url}?cb=${Date.now()}`, {
+          cache: "no-store",
+        });
         const data = await response.json();
         return data;
       })
