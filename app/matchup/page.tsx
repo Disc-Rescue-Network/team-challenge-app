@@ -557,45 +557,54 @@ const MatchupPage = () => {
   const handlePlayerSelect = (
     selectedPdgaNumber: number,
     isOpponent: boolean,
-    currentIndex: number
+    previousSelectedPdgaNumber: number
   ) => {
-    if (isOpponent) {
-      const selectedPlayerIndex = sortedOpponentPlayers.findIndex(
-        (p) => p.pdgaNumber === selectedPdgaNumber
-      );
-      if (selectedPlayerIndex === -1) return;
+    console.log("Selected PDGA number:", selectedPdgaNumber);
+    console.log("Is opponent:", isOpponent);
+    console.log("Previous Selected PDGA Number:", previousSelectedPdgaNumber);
+    const targetPlayers = isOpponent
+      ? sortedOpponentPlayers
+      : sortedTeamPlayers;
+    const setTargetPlayers = isOpponent
+      ? setSortedOpponentPlayers
+      : setSortedTeamPlayers;
 
-      const updatedOpponentPlayers = [...sortedOpponentPlayers];
+    const selectedPlayerIndex = targetPlayers.findIndex(
+      (p) => p.pdgaNumber === selectedPdgaNumber
+    );
 
-      // Swap positions of the selected player and the current player
-      [
-        updatedOpponentPlayers[currentIndex],
-        updatedOpponentPlayers[selectedPlayerIndex],
-      ] = [
-        updatedOpponentPlayers[selectedPlayerIndex],
-        updatedOpponentPlayers[currentIndex],
-      ];
+    console.log("Selected player index:", selectedPlayerIndex);
 
-      setSortedOpponentPlayers(updatedOpponentPlayers);
+    const previousPlayerIndex = targetPlayers.findIndex(
+      (p) => p.pdgaNumber === previousSelectedPdgaNumber
+    );
+
+    if (selectedPlayerIndex === -1) return;
+
+    if (previousPlayerIndex === -1) return;
+
+    const updatedPlayers = [...targetPlayers];
+
+    // Check if we're moving to the last position
+    if (
+      previousPlayerIndex === updatedPlayers.length - 1 &&
+      selectedPlayerIndex !== previousPlayerIndex
+    ) {
+      // Remove and re-add the selected player at the end
+      const [movedPlayer] = updatedPlayers.splice(selectedPlayerIndex, 1);
+      updatedPlayers.push(movedPlayer);
     } else {
-      const selectedPlayerIndex = sortedTeamPlayers.findIndex(
-        (p) => p.pdgaNumber === selectedPdgaNumber
-      );
-      if (selectedPlayerIndex === -1) return;
-
-      const updatedTeamPlayers = [...sortedTeamPlayers];
-
-      // Swap positions of the selected player and the current player
+      // Swap the selected player with the current position
       [
-        updatedTeamPlayers[currentIndex],
-        updatedTeamPlayers[selectedPlayerIndex],
+        updatedPlayers[previousPlayerIndex],
+        updatedPlayers[selectedPlayerIndex],
       ] = [
-        updatedTeamPlayers[selectedPlayerIndex],
-        updatedTeamPlayers[currentIndex],
+        updatedPlayers[selectedPlayerIndex],
+        updatedPlayers[previousPlayerIndex],
       ];
-
-      setSortedTeamPlayers(updatedTeamPlayers);
     }
+
+    setTargetPlayers(updatedPlayers);
   };
 
   // Render matchups table rows
@@ -617,6 +626,10 @@ const MatchupPage = () => {
       const player = activeTeamPlayers[index] || {};
       const opponentPlayer = activeOpponentPlayers[index] || {};
 
+      // console.log("Player:", player);
+      // console.log("Opponent player:", opponentPlayer);
+      // console.log("Index:", index);
+
       return (
         <TableRow key={index}>
           <TableCell>
@@ -630,7 +643,7 @@ const MatchupPage = () => {
             <Select
               value={player.pdgaNumber?.toString() || ""}
               onValueChange={(value) =>
-                handlePlayerSelect(Number(value), false, index)
+                handlePlayerSelect(Number(value), false, player.pdgaNumber)
               }
             >
               <SelectTrigger className="w-[180px]">
@@ -739,7 +752,11 @@ const MatchupPage = () => {
             <Select
               value={opponentPlayer.pdgaNumber?.toString() || ""}
               onValueChange={(value) =>
-                handlePlayerSelect(Number(value), true, index)
+                handlePlayerSelect(
+                  Number(value),
+                  true,
+                  opponentPlayer.pdgaNumber
+                )
               }
             >
               <SelectTrigger className="w-[180px]">
@@ -1075,7 +1092,7 @@ const MatchupPage = () => {
 
   return (
     <div className="flex h-3/5 flex-1 flex-col gap-6 p-2 lg:gap-6 lg:p-4">
-      <Card className="">
+      <Card className="mr-auto max-w-[1300px]">
         <CardHeader className="grid grid-cols-1 gap-4">
           <CardTitle>
             <div className="flex flex-row items-center justify-start gap-4">
