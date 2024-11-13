@@ -1145,8 +1145,8 @@ const MatchupPage = () => {
         <CardContent className="grid grid-cols-1 gap-8">
           {!team && (
             <Label>
-              Please create your team in "roster builder", set it as your team
-              and then come back to this page.
+              Please create your team in &quot;roster builder&quot;, set it as
+              your team and then come back to this page.
             </Label>
           )}
           {team && selectedOpponent && (
