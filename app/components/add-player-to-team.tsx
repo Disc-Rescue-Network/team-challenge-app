@@ -34,6 +34,14 @@ import { Team } from "../interfaces/Team";
 import { SearchCard } from "./search";
 import { PlayerSearchResult } from "./PlayerSearch";
 import { paginateArray, Pagination } from "./pagination";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const AddPlayerToTeam = () => {
   const [isAdding, setIsAdding] = useState<boolean>(false);
@@ -191,7 +199,7 @@ const AddPlayerToTeam = () => {
         setIsLoading={setIsLoading}
       />
 
-      <Card className="w-full mt-4 mb-4">
+      <Card className="mb-4 mt-4 w-full">
         <CardHeader>
           <CardTitle>Search Results</CardTitle>
         </CardHeader>
@@ -218,7 +226,7 @@ const AddPlayerToTeam = () => {
               {results.length === 0 ? (
                 <TableBody>
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center pt-10">
+                    <TableCell colSpan={9} className="pt-10 text-center">
                       {isLoading ? (
                         <Loader2 size="32" className="mx-auto animate-spin" />
                       ) : (
@@ -277,7 +285,7 @@ const AddPlayerToTeam = () => {
               )}
             </Table>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogContent className="w-[90%] md:w-[100%] lg:w-[100%] rounded-lg">
+              <DialogContent className="w-[90%] rounded-lg md:w-[100%] lg:w-[100%]">
                 <DialogHeader className="text-start">
                   <DialogTitle>Add Player to Team</DialogTitle>
                   <DialogDescription className="!mt-1">
@@ -285,34 +293,31 @@ const AddPlayerToTeam = () => {
                   </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex gap-4 mb-0 md:mb-2 lg:mb-2 pt-2 items-center">
-                  <Label>Gender</Label>
-                  <GenderSwitch
-                    selectedGender={selectedGender}
-                    onGenderChange={setSelectedGender}
-                  />
-                </div>
+                <div className="grid gap-4 py-4">
+                  <div className="mb-0 flex items-center gap-4 pt-2 md:mb-2 lg:mb-2">
+                    <Label>Gender</Label>
+                    <GenderSwitch
+                      selectedGender={selectedGender}
+                      onGenderChange={setSelectedGender}
+                    />
+                  </div>
 
-                <div className="flex flex-row gap-2 items-center mb-2 md:mb-0 lg:mb-0">
-                  <Label>Team</Label>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline">
-                        {selectedTeam ? selectedTeam : "Select a team"}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="custom-dropdown-content overflow-y-auto max-h-[250px]">
-                      {teamNames.map((team) => (
-                        <DropdownMenuItem
-                          key={team}
-                          onSelect={() => setSelectedTeam(team)}
-                          className="w-full py-2 px-4 hover:bg-gray-100 pl-7"
-                        >
-                          {team}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="mb-2 flex flex-row items-center gap-4 md:mb-0 lg:mb-0">
+                    <Label>Team</Label>
+                    <Select
+                      value={selectedTeam}
+                      onValueChange={setSelectedTeam}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a team" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {teamNames.map((team) => (
+                          <SelectItem value={team}>{team}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <DialogFooter>
