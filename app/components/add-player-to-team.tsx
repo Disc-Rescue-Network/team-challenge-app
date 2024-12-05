@@ -313,7 +313,9 @@ const AddPlayerToTeam = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {teamNames.map((team) => (
-                          <SelectItem value={team}>{team}</SelectItem>
+                          <SelectItem value={team} key={team}>
+                            {team}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
