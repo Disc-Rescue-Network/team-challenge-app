@@ -62,6 +62,7 @@ import {
 // -- interfaces
 import { Player } from "@/app/interfaces/Player";
 import { paginateArray, Pagination } from "../pagination";
+import GenderSwitch from "../genderSwitch";
 // --utils
 
 type TooltipContent = {
@@ -108,6 +109,8 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [selectedGender, setSelectedGender] = useState("male");
+  const [results, setResults] = useState<any[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -728,78 +731,150 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
     gender: "male",
   });
 
-  const handleAddPlayer = async (player: Player, isOpponent: boolean) => {
-    try {
+  const handleConfirmAddPlayer = async () => {
+    if (manualPlayer && selectedTeam) {
       setIsAdding(true);
-      const response = await fetch("/api/addPlayerToTeam", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          player,
-          teamName: isOpponent ? selectedOpponent?.name : team.name,
-          isOpponent,
-        }),
-      });
-
-      if (response.status === 400) {
+      try {
+        const response = await fetch("/api/addPlayerToTeam", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            player: manualPlayer,
+            teamName: selectedTeam,
+            gender: selectedGender,
+          }),
+        });
         const data = await response.json();
+        if (data.status === 400) {
+          toast({
+            title: "Error - Player",
+            description: data.message,
+            variant: "destructive",
+            duration: 3000,
+          });
+        }
+
+        const updatedSearchResult = results.filter(
+          (player) => player.name !== manualPlayer.name
+        );
+        console.log("Updated search result", updatedSearchResult);
+        setResults(updatedSearchResult);
+        setPaginationConfig((previous) => ({
+          ...previous,
+          totalCount: updatedSearchResult.length,
+        }));
+
         toast({
-          title: "Player already exists",
-          description: data.message,
+          title: "Player added 🚩",
+          description: `Player ${manualPlayer.name} added to team ${selectedTeam}`,
+          variant: "default",
+          duration: 3000,
+        });
+      } catch (error) {
+        console.error("Error adding player:", error);
+        toast({
+          title: "Error",
+          description: "Failed to add player to team",
           variant: "destructive",
           duration: 3000,
         });
+      } finally {
         setIsAdding(false);
-        return;
+        setManual(false);
       }
-
-      if (!response.ok) {
-        throw new Error("Failed to add player");
-      }
-
-      const data = await response.json();
-      if (isOpponent) {
-        setSelectedOpponent(data.team);
-      } else {
-        setTeam(data.team);
-      }
+    } else {
       toast({
-        title: "Player added",
-        description: `Player added to ${isOpponent ? "opponent" : "your"} team`,
-        variant: "default",
-        duration: 3000,
-      });
-    } catch (error) {
-      console.error("Error adding player:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add player to the team",
+        title: "Selection required",
+        description: "Please select a player and a team before adding.",
         variant: "destructive",
         duration: 3000,
-      });
-    } finally {
-      setIsAdding(false);
-      setManualPlayer({
-        name: "",
-        pdgaNumber: 0,
-        rating: 0,
-        class: "",
-        city: "",
-        state: "",
-        country: "",
-        membershipStatus: "",
-        active: true,
-        isEditing: false,
-        tempRating: 0,
-        gender: "male",
       });
     }
   };
 
   return (
     <>
+      <Dialog open={manual} onOpenChange={setManual}>
+        <DialogTrigger asChild className="mb-4 flex items-center gap-2">
+          <Button
+            size="sm"
+            className="ml-auto max-w-[250px] items-center justify-end"
+          >
+            + Manually Add Player
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="flex flex-col gap-4 p-6">
+          <DialogHeader>
+            <DialogTitle>Confirm Player Details</DialogTitle>
+            <DialogDescription>
+              Please confirm the player details before adding to the team
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 grid grid-cols-1 gap-4">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              type="text"
+              name="name"
+              value={manualPlayer.name}
+              onChange={(e) =>
+                setManualPlayer({
+                  ...manualPlayer,
+                  name: e.target.value,
+                })
+              }
+              placeholder="Enter player's name"
+            />
+            <Label htmlFor="pdga">PDGA Number</Label>
+            <Input
+              type="number"
+              name="pdga"
+              value={manualPlayer.pdgaNumber}
+              onChange={(e) =>
+                setManualPlayer({
+                  ...manualPlayer,
+                  pdgaNumber: parseInt(e.target.value, 10),
+                })
+              }
+              placeholder="Enter player's PDGA number"
+            />
+            <Label htmlFor="rating">Rating</Label>
+
+            <Input
+              type="number"
+              name="rating"
+              value={manualPlayer.rating}
+              onChange={(e) =>
+                setManualPlayer({
+                  ...manualPlayer,
+                  rating: parseInt(e.target.value, 10),
+                })
+              }
+              placeholder="Enter player's rating"
+            />
+          </div>
+          <div className="mb-0 flex items-center gap-4 pt-2 md:mb-2 lg:mb-2">
+            <Label>Gender</Label>
+            <GenderSwitch
+              selectedGender={selectedGender}
+              onGenderChange={setSelectedGender}
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={() => handleConfirmAddPlayer()}>
+              {isAdding ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                `Add to ${selectedTeam || "N/A"}`
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg md:text-2xl lg:text-2xl">
@@ -811,74 +886,6 @@ const TeamManagementContent = ({ activeTab }: TeamManagementContentProps) => {
               />
             )}
           </CardTitle>
-          <Dialog open={manual} onOpenChange={setManual}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="ml-auto max-w-[250px]">
-                + Manually Add Player
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="flex flex-col gap-4 p-2">
-              <DialogHeader>
-                <DialogTitle>Confirm Player Details</DialogTitle>
-              </DialogHeader>
-              <div className="mt-4 grid grid-cols-1 gap-4">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  type="text"
-                  name="name"
-                  value={manualPlayer.name}
-                  onChange={(e) =>
-                    setManualPlayer({
-                      ...manualPlayer,
-                      name: e.target.value,
-                    })
-                  }
-                  placeholder="Enter player's name"
-                />
-                <Label htmlFor="pdga">PDGA Number</Label>
-                <Input
-                  type="number"
-                  name="pdga"
-                  value={manualPlayer.pdgaNumber}
-                  onChange={(e) =>
-                    setManualPlayer({
-                      ...manualPlayer,
-                      pdgaNumber: parseInt(e.target.value, 10),
-                    })
-                  }
-                  placeholder="Enter player's PDGA number"
-                />
-                <Label htmlFor="rating">Rating</Label>
-
-                <Input
-                  type="number"
-                  name="rating"
-                  value={manualPlayer.rating}
-                  onChange={(e) =>
-                    setManualPlayer({
-                      ...manualPlayer,
-                      rating: parseInt(e.target.value, 10),
-                    })
-                  }
-                  placeholder="Enter player's rating"
-                />
-              </div>
-              <DialogFooter>
-                <DialogClose>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <Button onClick={() => handleAddPlayer(manualPlayer, false)}>
-                  Add to Team
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => handleAddPlayer(manualPlayer, true)}
-                >
-                  Add to Opponent
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="!mt-0 gap-1 px-2">
